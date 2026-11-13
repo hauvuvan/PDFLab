@@ -1,4 +1,4 @@
-# Paperdesk
+# PDFLabs
 
 Bộ công cụ tài liệu chạy trên máy cá nhân, với dashboard, watermark PDF và chuyển Word sang PDF hàng loạt.
 
@@ -31,6 +31,10 @@ Chọn **Word sang PDF**, thêm nhiều file `.doc`/`.docx`, bấm **Chuyển sa
 Có thể lưu mẫu kèm logo, áp dụng lại, cập nhật tên/cấu hình và nhập/xuất JSON. Nút “Chữ nghiêng lặp như ảnh mẫu” đặt nhanh kiểu chữ xám nghiêng so le. [Hướng dẫn chi tiết từng tùy chọn và mẫu](docs/features/watermark.md).
 
 File gốc không bị ghi đè. Mặc định theo script Colab: rộng tối đa 50%, cao tối đa 10%, chân trang, cách mép dưới 20 pt, liên kết và tiền tố tailieuonthi.org. Ảnh luôn giữ tỷ lệ và căn giữa trong vùng đã chọn.
+
+## Xoá watermark
+
+Chọn **Xoá watermark** trên dashboard → mở PDF → chọn ảnh/logo có sẵn hoặc kéo khoanh vùng header/footer → chọn phạm vi trang → xem trước → tải PDF mới. Khoanh vùng xoá cả nội dung trong vùng; watermark dính vào ảnh scan không thể tách khỏi chữ. [Cách dùng và giới hạn](docs/features/remove-watermark.md).
 
 ## Tài liệu và kiểm thử
 

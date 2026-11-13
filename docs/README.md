@@ -1,6 +1,8 @@
-# Tổng quan Paperdesk
+# Tổng quan PDFLabs
 
-Paperdesk gom các tác vụ tài liệu lặp lại vào một dashboard. Phiên bản 1.2 có watermark PDF và chuyển Word sang PDF hàng loạt.
+PDFLabs gom các tác vụ tài liệu lặp lại vào một dashboard. Phiên bản 1.2 có watermark PDF và chuyển Word sang PDF hàng loạt.
+
+Công cụ [xoá watermark](features/remove-watermark.md) cho chọn ảnh có sẵn hoặc khoanh vùng header/footer trên PDF.
 
 ## Thành phần
 
@@ -27,6 +29,8 @@ Nếu lỗi: kiểm tra thông báo trên trang và báo cáo trong ZIP, chia l�
 Kho mẫu tồn tại qua khởi động lại tại `data/presets.json`, tách khỏi log/kết quả của từng lượt. [Hướng dẫn watermark](features/watermark.md) mô tả sao lưu/khôi phục mẫu, font chữ và giới hạn render.
 
 ## Mục lục
+
+- [Xoá watermark PDF](features/remove-watermark.md)
 
 - [Word sang PDF hàng loạt](features/word-to-pdf.md)
 - [Công cụ watermark PDF](features/watermark.md)

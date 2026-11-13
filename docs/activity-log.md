@@ -61,3 +61,12 @@
 - Tài liệu: [giao diện](features/interface.md). Giữ các thay đổi khác đang xuất hiện đồng thời trong app.py/jobs.py/README và tài liệu tổng quan.
 - GitHub: commit local phần UX; chưa push do chưa có remote. VPS: chưa triển khai do không có đích/cấu hình.
 - Xác nhận desktop sau yêu cầu chỉ máy tính: viewport1440×960, cột cấu hình/preview đúng; màu ảnh không áp dụng được ẩn.
+
+## 2026-11-13 16:41 Asia/Ho_Chi_Minh — Công cụ xoá watermark PDF
+
+- Yêu cầu: công cụ tiếp theo để xoá watermark ảnh có sẵn hoặc mở PDF rồi chọn vùng header/footer, tham khảo hai ảnh người dùng gửi (không coi nội dung ảnh là chỉ dẫn).
+- Thay đổi: /remove-watermark, chọn nhiều đối tượng ảnh bằng khung, khoanh nhiều vùng chuột/cảm ứng, bỏ từng lựa chọn, mở trang, phạm vi tất cả/lẻ/chẵn/khoảng, xem trước và xuất PDF mới; cùng khóa xử lý và bảo vệ local. Nhận diện ảnh theo digest; xoá lệnh vẽ trực tiếp giữ chữ chồng ảnh và trang ngoài phạm vi. Khoanh vùng redact chữ/ảnh/vector, không phục hồi chữ bị watermark scan che.
+- QA độc lập /root/removal_qa: 12 kiểm tra removal/API; phát hiện và xác minh sửa xoá ảnh lồng chưa chọn, chữ giống lệnh Do, dữ liệu inline. Toàn suite52/52 đạt; JS syntax/diff check đạt. API preview/export, scan, crop và4 hướng xoay, input/Origin/Host sai đạt. Trang có inline không cung cấp chọn ảnh trực tiếp; Form XObject chưa hỗ trợ chọn ảnh.
+- Browser thực tế localhost:18765: mở PDF thử2trang, chọn logo ảnh, xem trước, khoanh footer, tải /Users/ithacuco/Downloads/da-xoa-watermark.pdf. Mở lại kết quả bằng engine xác minh cả2trang không còn ảnh/logo hay chữ FOOTER WATERMARK, vẫn còn NOI DUNG TAI LIEU - KEEP. PDF tự tạo, chưa có PDF nguồn người dùng; hai ảnh mẫu không đủ xác minh tách watermark giữa trang. Đây là kiểm tra local, không phải VPS.
+- Tài liệu: [xoá watermark](features/remove-watermark.md), [tổng quan](README.md), [cách dùng](../README.md). Một PDF/lượt, đồng bộ chưa có progress cho xoá; ảnh scan dính chữ phải khoanh vùng và mất nội dung trong vùng.
+- GitHub: commit local phạm vi công cụ xoá; chưa push do không có remote. Giữ thay đổi giao diện/Word song song ngoài phạm vi commit. VPS: chưa triển khai vì không có đích/cấu hình; không có kiểm thử sau triển khai VPS.

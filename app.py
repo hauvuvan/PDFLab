@@ -38,6 +38,38 @@ def index():
     return render_template('index.html')
 
 
+@app.get('/remove-watermark')
+def removal_editor():
+    return render_template('removal.html')
+
+
+@app.post('/api/removal/<action>')
+def removal_action(action):
+    import removal
+    if action not in ('inspect', 'preview', 'export'):
+        return jsonify(error='Không tìm thấy thao tác.'), 404
+    try:
+        pdf = request.files.get('pdf')
+        if not pdf or not pdf.filename.lower().endswith('.pdf'):
+            raise ValueError('Vui lòng chọn PDF.')
+        data = pdf.read()
+        try:
+            number = int(request.form.get('page', '1'))
+        except ValueError:
+            raise ValueError('Số trang không hợp lệ.')
+        with jobs.ENGINE_LOCK:
+            if action == 'inspect':
+                return jsonify(removal.inspect(data, number))
+            opts = removal.settings(request.form)
+            result, count = removal.process(data, opts, number if action == 'preview' else None)
+        response = send_file(io.BytesIO(result), mimetype='image/png' if action == 'preview' else 'application/pdf',
+                             as_attachment=action == 'export', download_name='da-xoa-watermark.pdf')
+        response.headers['X-Removed-Images'] = str(count)
+        return response
+    except ValueError as exc:
+        return jsonify(error=str(exc)), 400
+
+
 @app.get('/health')
 def health():
     return jsonify(status='ok', version='1.2.0')
