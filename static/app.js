@@ -2,10 +2,9 @@ const $ = s => document.querySelector(s);
 let files = [], logoURL, previewURL, downloadURL, busy = false, revision = 0, savedLogo = null, presets = [];
 const form = $('#watermark-form');
 function navigate(editor) {
-  $('#word-editor').hidden = true; $('#nav-word').classList.remove('active');
   $('#dashboard').hidden = editor; $('#editor').hidden = !editor;
   $('#nav-home').classList.toggle('active', !editor); $('#nav-watermark').classList.toggle('active', editor);
-  $('#breadcrumb').textContent = editor ? 'Watermark PDF' : 'Tổng quan';
+  $('#breadcrumb').textContent = editor ? 'Watermark PDF' : 'Tất cả công cụ';
   location.hash = editor ? 'watermark' : ''; window.scrollTo(0,0);
 }
 $('#nav-home').onclick = $('#back').onclick = () => navigate(false);
@@ -13,7 +12,7 @@ $('#nav-watermark').onclick = $('#open-watermark').onclick = () => navigate(true
 window.addEventListener('hashchange', () => navigate(location.hash === '#watermark'));
 if(location.hash === '#watermark') navigate(true);
 function message(text, error=false) { $('#status').hidden=false; $('#status').textContent=text; $('#status').classList.toggle('error',error); }
-function stale() {revision++; if(!$('#preview-image').hidden) $('#preview-note').textContent='Cấu hình đã thay đổi. Bấm “Xem” để cập nhật bản xem trước.';}
+function stale() {revision++;syncActions(); if(!$('#preview-image').hidden) $('#preview-note').textContent='Có thay đổi chưa xem trước. Chọn Cập nhật.';}
 function renderFiles(){
   $('#file-list').replaceChildren(); $('#preview-file').replaceChildren();
   files.forEach((file,i)=>{
@@ -42,9 +41,9 @@ drop.addEventListener('drop',e=>addFiles(e.dataTransfer.files));
 $('#watermark').onchange=e=>{
   const file=e.target.files[0];savedLogo=null;stale();
   if(!file)return;
-  if(file.size>15*1024*1024){e.target.value='';return message('Ảnh watermark tối đa 15 MB.',true);}
+  if(file.size>15*1024*1024){e.target.value='';syncActions();return message('Ảnh watermark tối đa 15 MB.',true);}
   if(logoURL)URL.revokeObjectURL(logoURL);logoURL=URL.createObjectURL(file);
-  $('#logo-thumb').src=logoURL;$('#logo-thumb').hidden=false;$('#logo-placeholder').hidden=true;$('#logo-name').textContent=file.name;
+  $('#logo-thumb').src=logoURL;$('#logo-thumb').hidden=false;$('#logo-placeholder').hidden=true;$('#logo-name').textContent=file.name;syncActions();
 };
 const defaults={kind:'image',position:'bottom',margin:20,width:50,height:10,opacity:100,angle:0,offset_x:0,offset_y:0,spacing_x:20,spacing_y:15,layout:'single',layer:'above',font:'sans',bold:'false',color:'#808080',tint:'false',text:'tailieuchuan.vn',pages:'all',page_range:'',prefix:'[tailieuonthi.org]',link:'https://tailieuonthi.org/'};
 function updateRanges(){
@@ -55,6 +54,8 @@ function updateRanges(){
 function syncUI(){
   const text=form.elements.kind.value==='text';
   $('#text-settings').hidden=!text;$('#image-settings').hidden=text;
+  $('.color-row').hidden=!text&&!$('#tint-toggle').checked;
+  $('.anchor-grid').parentElement.hidden=form.elements.layout.value==='tile';
   form.elements.text.required=text;
   $('#tile-settings').hidden=form.elements.layout.value!=='tile';
   $('#tile-settings').querySelectorAll('input').forEach(field=>field.disabled=$('#tile-settings').hidden);
@@ -63,8 +64,8 @@ function syncUI(){
   form.elements.page_range.disabled=form.elements.pages.value!=='custom';
   document.querySelectorAll('[data-position]').forEach(button=>{button.setAttribute('aria-pressed',String(button.dataset.position===form.elements.position.value));button.disabled=form.elements.layout.value==='tile';});
   $('#transparency').value=100-Number(form.elements.opacity.value);
-  $('#color-hint').textContent=text ? 'Màu của chữ watermark.' : $('#tint-toggle').checked ? 'Đổi tất cả điểm ảnh có màu thành màu này, giữ alpha.' : 'Ảnh đang giữ màu gốc. Bật “Đổi ảnh thành một màu” để áp dụng.';
-  updateRanges();
+  $('#color-hint').textContent=text ? 'Áp dụng cho chữ.' : $('#tint-toggle').checked ? 'Áp dụng cho ảnh, giữ nền trong suốt.' : 'Ảnh dùng màu gốc.';
+  updateRanges();syncActions();
 }
 function setOptions(values){for(const [name,value] of Object.entries(values)){const field=form.elements[name];if(field)field.value=String(value);}$('#tint-toggle').checked=values.tint==='true';syncUI();stale();}
 form.addEventListener('input',e=>{if(e.target.id==='transparency')form.elements.opacity.value=100-Number(e.target.value);syncUI();stale();});
@@ -85,13 +86,27 @@ function payload(preview){
   if(preview){data.append('pdf',files[Number($('#preview-file').value)||0]);data.append('page',$('#page-number').value);}else files.forEach(file=>data.append('pdfs',file));
   return data;
 }
-function setBusy(value){busy=value;$('#process-button').disabled=value;$('#preview-button').disabled=value;document.querySelectorAll('.preset-actions button,#preset-apply,#preset-import').forEach(el=>el.disabled=value);}
+function syncActions(){
+  const ready=files.length>0 && (form.elements.kind.value==='text' ? form.elements.text.value.trim().length>0 : !!currentLogo());
+  $('#process-button').disabled=busy||!ready;
+  $('#preview-button').disabled=busy||!ready;
+  $('#process-button').textContent=busy ? 'Đang xử lý…' : files.length>1 ? `Tạo ${files.length} PDF` : 'Tạo PDF';
+  $('#preview-button').textContent=busy ? 'Đang xử lý…' : 'Cập nhật';
+  $('#action-hint').textContent=!files.length ? 'Thêm file PDF để bắt đầu.' : form.elements.kind.value==='image'&&!currentLogo() ? 'Chọn ảnh watermark để tiếp tục.' : form.elements.kind.value==='text'&&!form.elements.text.value.trim() ? 'Nhập nội dung watermark.' : `${files.length} PDF · Tải kết quả dạng ZIP`;
+  const selected=!!$('#preset-select').value;
+  for(const id of ['preset-apply','preset-update','preset-delete','preset-export'])$('#'+id).disabled=busy||!selected;
+  $('#preset-save').disabled=busy;$('#preset-import').disabled=busy;
+  $('#watermark-form').setAttribute('aria-busy',String(busy));
+}
+function setBusy(value){busy=value;syncActions();}
+form.addEventListener('invalid',e=>{const details=e.target.closest('details');if(details)details.open=true;},true);
+
 async function errorBody(response){try{return await response.json();}catch{return {error:'Không đọc được phản hồi. Hãy thử chia nhỏ số file hoặc khởi động lại công cụ.'};}}
 $('#preview-button').onclick=async()=>{
   if(busy)return;const data=payload(true);if(!data)return;setBusy(true);const current=revision;message('Đang tạo bản xem trước…');
   try{const response=await fetch('/api/preview',{method:'POST',body:data});if(!response.ok)throw new Error((await errorBody(response)).error);
     const blob=await response.blob();if(previewURL)URL.revokeObjectURL(previewURL);previewURL=URL.createObjectURL(blob);$('#preview-image').src=previewURL;$('#preview-image').hidden=false;$('#preview-empty').hidden=true;
-    $('#preview-note').textContent=current===revision ? `Trang ${data.get('page')} / ${response.headers.get('X-Page-Count')} · Đúng cấu hình xuất file` : 'Cấu hình đã thay đổi. Bấm “Xem” để cập nhật.';message('Đã tạo bản xem trước. Kiểm tra vị trí trước khi xử lý hàng loạt.');
+    $('#preview-note').textContent=current===revision ? `Trang ${data.get('page')} / ${response.headers.get('X-Page-Count')} · Đúng cấu hình xuất file` : 'Có thay đổi chưa xem trước. Chọn Cập nhật.';message('Đã cập nhật bản xem trước.');
   }catch(error){message(error.message,true);}finally{setBusy(false);}
 };
 function reports(items){const box=$('#results');box.hidden=false;for(const item of items){const p=document.createElement('p');p.textContent=item.status==='ok' ? `✓ ${item.file} → ${item.output} · ${item.pages} trang` : `⚠ ${item.file}: ${item.error}`;box.append(p);}}
@@ -144,8 +159,8 @@ if(savedJob && /^[a-f0-9]{32}$/.test(savedJob)){navigate(true);trackJob(savedJob
 // Presets live in the local application folder and include only settings + logo.
 async function refreshPresets(selected=''){
   const response=await fetch('/api/presets');const body=await response.json();if(!response.ok)throw new Error(body.error);
-  presets=body.presets;const select=$('#preset-select');select.replaceChildren(new Option('Chọn mẫu đã lưu…',''));
-  presets.forEach(p=>select.append(new Option(p.name,p.id)));select.value=selected;
+  presets=body.presets;const select=$('#preset-select');select.replaceChildren(new Option('Chọn mẫu…',''));
+  presets.forEach(p=>select.append(new Option(p.name,p.id)));select.value=selected;syncActions();
 }
 function selectedPreset(){return presets.find(p=>p.id===$('#preset-select').value);}
 function fileBase64(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result.split(',')[1]);reader.onerror=()=>reject(new Error('Không đọc được logo.'));reader.readAsDataURL(file);});}
@@ -159,14 +174,14 @@ async function persistRecipe(data){const response=await fetch('/api/presets',{me
 for(const [id,update] of [['preset-save',false],['preset-update',true]])$('#'+id).onclick=async()=>{
   if(busy)return;try{const data=await recipeData(update);setBusy(true);await persistRecipe(data);message(update?'Đã cập nhật mẫu trên máy.':'Đã lưu mẫu mới trên máy, gồm cấu hình và logo nếu có.');}catch(error){message(error.message,true);}finally{setBusy(false);}
 };
-$('#preset-select').onchange=()=>{const item=selectedPreset();$('#preset-name').value=item?item.name:'';};
+$('#preset-select').onchange=()=>{const item=selectedPreset();$('#preset-name').value=item?item.name:'';syncActions();};
 function applyRecipe(item){
   setOptions(item.options);$('#watermark').value='';savedLogo=null;
   if(logoURL)URL.revokeObjectURL(logoURL);
   if(item.options.kind==='image'){
     const bytes=Uint8Array.from(atob(item.image),c=>c.charCodeAt(0));savedLogo=new Blob([bytes],{type:'image/png'});logoURL=URL.createObjectURL(savedLogo);$('#logo-thumb').src=logoURL;$('#logo-thumb').hidden=false;$('#logo-placeholder').hidden=true;$('#logo-name').textContent='Logo từ mẫu: '+item.name;
-  }else{$('#logo-thumb').hidden=true;$('#logo-placeholder').hidden=false;$('#logo-name').textContent='Chọn logo hoặc hình ảnh';}
-  $('#preset-name').value=item.name;message('Đã áp dụng mẫu “'+item.name+'”. Bấm Xem để kiểm tra trên PDF.');
+  }else{$('#logo-thumb').hidden=true;$('#logo-placeholder').hidden=false;$('#logo-name').textContent='Chọn ảnh watermark';}
+  $('#preset-name').value=item.name;syncActions();message('Đã áp dụng mẫu “'+item.name+'”. Chọn Cập nhật để xem trên PDF.');
 }
 $('#preset-apply').onclick=()=>{const item=selectedPreset();if(!item)return message('Chọn mẫu trước khi áp dụng.',true);applyRecipe(item);};
 $('#preset-delete').onclick=async()=>{

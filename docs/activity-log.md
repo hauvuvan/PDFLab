@@ -51,3 +51,13 @@
 - Kiểm tra browser local `http://127.0.0.1:8772/#word`: bộ chuyển đổi sẵn sàng, chọn DOCX thử nghiệm → nút chuyển → hoàn tất1 thành công0lỗi, PDF1trang; có link ZIP và log. Đây là bản kiểm tra local, không phải triển khai VPS. Chưa nghiệm thu Word bố cục phức tạp, mật khẩu hoặc lô sát195MB.
 - Tài liệu: [Word sang PDF](features/word-to-pdf.md), [tổng quan](README.md), [hướng dẫn mở](../README.md). Giữ nguyên thay đổi UI/xóa watermark ngoài task; chỉ stage phần Word.
 - GitHub: commit local sau kiểm tra; chưa push vì không có remote. VPS: chưa triển khai do không có đích/cấu hình truy cập; công cụ chạy localhost.
+
+## 2026-11-13 16:36 Asia/Ho_Chi_Minh — Tối ưu chữ, nút và điều khiển
+
+- Yêu cầu: tối ưu thực chất UI UX về text/button/element sau lượt chỉnh bố cục.
+- Thay đổi: rút gọn nhãn và hướng dẫn; phân cấp Tạo PDF/Cập nhật; nút phụ thuộc dữ liệu đầu vào và lựa chọn mẫu, hướng dẫn thiếu dữ liệu cạnh nút; thu gọn nâng cao/mẫu, mở khi validation lỗi; thông báo cạnh khu vực xuất; vùng bấm lớn hơn. Người dùng xác nhận chỉ dùng máy tính: đã bỏ phần tinh chỉnh mobile vừa thêm, tập trung cột cấu hình/preview desktop. Ẩn màu không áp dụng/vị trí đơn khi lặp. Không sửa engine/API.
+- Kiểm thử độc lập `/root/ux_qa`: 35/35 unittest đạt, JS syntax/selector/ID/giữ trường form đạt; 7 trạng thái readiness đạt. Đã sửa lỗi đóng details và readiness sau ảnh quá15MB do QA phát hiện. JS syntax và diff check cuối đạt.
+- Thực tế browser http://127.0.0.1:8768: thiếu PDF→chọn PDF→yêu cầu ảnh; chuyển Chữ→nút bật→preview PNG trang1/3→tạo PDF hoàn tất1/1, success1/failed0, link ZIP/log xuất hiện. Console error rỗng. Mobile390×844 content375px, advanced mở/đóng đúng. Chưa thử tải ảnh quá15MB qua picker hoặc mọi trình duyệt; nhánh sửa đã rà mã. Đây là kiểm tra local, không phải triển khai VPS.
+- Tài liệu: [giao diện](features/interface.md). Giữ các thay đổi khác đang xuất hiện đồng thời trong app.py/jobs.py/README và tài liệu tổng quan.
+- GitHub: commit local phần UX; chưa push do chưa có remote. VPS: chưa triển khai do không có đích/cấu hình.
+- Xác nhận desktop sau yêu cầu chỉ máy tính: viewport1440×960, cột cấu hình/preview đúng; màu ảnh không áp dụng được ẩn.
