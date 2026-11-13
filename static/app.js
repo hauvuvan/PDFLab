@@ -2,6 +2,7 @@ const $ = s => document.querySelector(s);
 let files = [], logoURL, previewURL, downloadURL, busy = false, revision = 0, savedLogo = null, presets = [];
 const form = $('#watermark-form');
 function navigate(editor) {
+  $('#word-editor').hidden = true; $('#nav-word').classList.remove('active');
   $('#dashboard').hidden = editor; $('#editor').hidden = !editor;
   $('#nav-home').classList.toggle('active', !editor); $('#nav-watermark').classList.toggle('active', editor);
   $('#breadcrumb').textContent = editor ? 'Watermark PDF' : 'Tổng quan';

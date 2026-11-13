@@ -8,6 +8,7 @@ from werkzeug.exceptions import RequestEntityTooLarge
 from watermark import options, prepare_watermark, process, preview
 import presets
 import jobs
+import word_converter
 
 app = Flask(__name__)
 app.config.update(MAX_CONTENT_LENGTH=200 * 1024 * 1024, MAX_FORM_MEMORY_SIZE=1024 * 1024,
@@ -39,7 +40,7 @@ def index():
 
 @app.get('/health')
 def health():
-    return jsonify(status='ok', version='1.1.0')
+    return jsonify(status='ok', version='1.2.0')
 
 
 def inputs():
@@ -130,6 +131,26 @@ def create_job():
         return jsonify(error=str(exc)), 400
 
 
+@app.get('/api/word/status')
+def word_status():
+    return jsonify(available=bool(word_converter.executable()))
+
+
+@app.post('/api/word/jobs')
+def create_word_job():
+    files = request.files.getlist('documents')
+    if not files or len(files) > 100:
+        return jsonify(error='Chọn từ 1 đến 100 file Word mỗi lượt.'), 400
+    if not word_converter.executable():
+        return jsonify(error='Cần cài LibreOffice hoặc đặt LIBREOFFICE_PATH rồi khởi động lại công cụ.'), 503
+    data = []
+    for document in files:
+        name = (document.filename or 'document.docx').replace('\\', '/').split('/')[-1]
+        name = ''.join(c for c in name if ord(c) >= 32)[:180] or 'document.docx'
+        data.append((name, document.read()))
+    return jsonify(id=jobs.submit(data, None, None, {}, converter=word_converter.convert)), 202
+
+
 @app.get('/api/jobs/<key>')
 def job_status(key):
     job = jobs.snapshot(key)
@@ -149,7 +170,7 @@ def job_download(key, kind):
     if kind == 'result' and (not job or job['state'] != 'completed' or not job['success']):
         return jsonify(error='Chưa có ZIP thành công để tải.'), 409
     path = folder / ('progress.jsonl' if kind == 'log' else 'result.zip')
-    return send_file(path, as_attachment=True, download_name=f'{key}-tien-trinh.jsonl' if kind == 'log' else 'pdf-watermark.zip')
+    return send_file(path, as_attachment=True, download_name=f'{key}-tien-trinh.jsonl' if kind == 'log' else ('word-sang-pdf.zip' if job and job.get('tool') == 'word' else 'pdf-watermark.zip'))
 
 
 @app.post('/api/process')

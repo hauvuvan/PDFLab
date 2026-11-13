@@ -44,21 +44,21 @@ def snapshot(key):
         return json.loads(json.dumps(job)) if job else None
 
 
-def submit(files, image, size, opts):
+def submit(files, image, size, opts, converter=None):
     cleanup()
     key = uuid.uuid4().hex
     folder = ROOT / key
     folder.mkdir()
     job = dict(id=key, state='queued', total=len(files), completed=0, page=0, pages=0,
-               current='', reports=[], success=0, failed=0, error=None)
+               current='', reports=[], success=0, failed=0, error=None, tool='word' if converter else 'watermark')
     event(job, 'queued', total=len(files))
     with LOCK:
         JOBS[key] = job
-    EXECUTOR.submit(run, job, files, image, size, opts)
+    EXECUTOR.submit(run, job, files, image, size, opts, converter)
     return key
 
 
-def run(job, files, image, size, opts):
+def run(job, files, image, size, opts, converter=None):
     folder = ROOT / job['id']
     try:
         with LOCK:
@@ -75,11 +75,16 @@ def run(job, files, image, size, opts):
                         job.update(page=page, pages=pages)
                     event(job, 'page', file=name, page=page, pages=pages)
                 try:
-                    if not name.lower().endswith('.pdf'):
-                        raise ValueError('File không có phần mở rộng PDF.')
-                    with ENGINE_LOCK:
-                        result, pages = process(raw, image, size, opts, progress=progress)
-                    desired = opts['prefix'] + name
+                    if converter:
+                        result, pages = converter(raw, name)
+                        progress(pages, pages)
+                        desired = Path(name).stem + '.pdf'
+                    else:
+                        if not name.lower().endswith('.pdf'):
+                            raise ValueError('File không có phần mở rộng PDF.')
+                        with ENGINE_LOCK:
+                            result, pages = process(raw, image, size, opts, progress=progress)
+                        desired = opts['prefix'] + name
                     candidate, index = desired, 2
                     while candidate.casefold() in used:
                         candidate = f'{Path(desired).stem} ({index}).pdf'

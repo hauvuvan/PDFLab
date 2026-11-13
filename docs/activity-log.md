@@ -42,3 +42,12 @@
 - GitHub: lưu commit local của phạm vi watermark sau kiểm tra; chưa push vì chưa có remote. VPS: chưa triển khai, không có đích/cấu hình; chỉ kiểm thử bản chạy cục bộ.
 
 - Xác minh sau khởi động lại 2026-11-13 16:12 +0700: localhost:8765 GET /health HTTP200, version1.1.0; GET /api/presets HTTP200, 2 mẫu còn nguyên. Bản mã watermark commit9ed88d3. Đây là kiểm tra local, không có VPS.
+
+## 2026-11-13 16:37 Asia/Ho_Chi_Minh — Word sang PDF hàng loạt
+
+- Yêu cầu: thêm tool chuyển nhiều tài liệu Word thành PDF.
+- Thay đổi: thẻ/sidebar Word sang PDF, chọn/kéo thả DOC/DOCX, bỏ file, giới hạn100 file/195MB, tiến trình nền/nối lại theo dõi, báo lỗi riêng, ZIP PDF/báo cáo/log, tên trùng thêm số. LibreOffice cục bộ, profile/thư mục tạm riêng, timeout120s/file; giữ nguồn. Dùng chung hàng đợi hiện có.
+- Kiểm thử độc lập: agent `/root/word_qa`, 5/5 test Word đạt. Chuyển DOCX tiếng Việt và DOC nhị phân Word97 thực; xác minh nội dung PDF; lô2 tên trùng Unicode+1 lỗi; toàn lỗi chỉ log; thiếu engine/timeout/engine lỗi/file rỗng/sai đuôi. Agent chính chạy lại5/5 đạt, JS syntax đạt. Bản riêng xuất từ nội dung chuẩn bị commit Word đạt40/40 unittest; không chứa phần xóa watermark ngoài task. Regression lúc kiểm tra43/44 đạt, lỗi `test_removal.test_selected_image_keeps_other_contained_image` thuộc phần xóa watermark đang sửa song song, không đưa vào commit Word.
+- Kiểm tra browser local `http://127.0.0.1:8772/#word`: bộ chuyển đổi sẵn sàng, chọn DOCX thử nghiệm → nút chuyển → hoàn tất1 thành công0lỗi, PDF1trang; có link ZIP và log. Đây là bản kiểm tra local, không phải triển khai VPS. Chưa nghiệm thu Word bố cục phức tạp, mật khẩu hoặc lô sát195MB.
+- Tài liệu: [Word sang PDF](features/word-to-pdf.md), [tổng quan](README.md), [hướng dẫn mở](../README.md). Giữ nguyên thay đổi UI/xóa watermark ngoài task; chỉ stage phần Word.
+- GitHub: commit local sau kiểm tra; chưa push vì không có remote. VPS: chưa triển khai do không có đích/cấu hình truy cập; công cụ chạy localhost.

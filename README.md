@@ -1,6 +1,6 @@
 # Paperdesk
 
-Bộ công cụ tài liệu chạy trên máy cá nhân, với dashboard và công cụ watermark PDF hàng loạt đầu tiên.
+Bộ công cụ tài liệu chạy trên máy cá nhân, với dashboard, watermark PDF và chuyển Word sang PDF hàng loạt.
 
 ## Mở công cụ trên macOS
 
@@ -15,6 +15,10 @@ python3 -m venv .venv
 ```
 
 Mở trình duyệt tại địa chỉ trên. Nếu cổng đã được dùng, dừng bản cũ hoặc chạy `PORT=8766 .venv/bin/python app.py` và mở cổng tương ứng.
+
+## Word sang PDF
+
+Chọn **Word sang PDF**, thêm nhiều file `.doc`/`.docx`, bấm **Chuyển sang PDF**, rồi tải ZIP kết quả và báo cáo. Hỗ trợ tối đa 100 file/195 MB, hiển thị tiến trình và lỗi riêng. Cần LibreOffice trên máy; xem [cài đặt, cách dùng và giới hạn](docs/features/word-to-pdf.md).
 
 ## Sử dụng
 

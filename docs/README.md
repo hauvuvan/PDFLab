@@ -1,11 +1,12 @@
 # Tổng quan Paperdesk
 
-Paperdesk gom các tác vụ tài liệu lặp lại vào một dashboard. Phiên bản 1.1 có công cụ watermark PDF; các thẻ còn lại là kế hoạch, không có API xử lý.
+Paperdesk gom các tác vụ tài liệu lặp lại vào một dashboard. Phiên bản 1.2 có watermark PDF và chuyển Word sang PDF hàng loạt.
 
 ## Thành phần
 
 - `app.py`: Flask phục vụ trang và API trên 127.0.0.1.
 - `watermark.py`: kiểm tra đầu vào, xử lý ảnh, chèn watermark/link và render preview bằng PyMuPDF.
+- `word_converter.py`: chuyển DOC/DOCX cục bộ qua LibreOffice, hồ sơ tạm riêng và giới hạn thời gian.
 - `presets.py`: kiểm tra và lưu mẫu watermark tại `data/presets.json`, gồm logo/cấu hình, không lưu PDF.
 - `templates/`, `static/`: giao diện tiếng Việt, không phụ thuộc CDN hoặc dịch vụ bên ngoài.
 - `tests/`: kiểm thử độc lập cho engine và HTTP.
@@ -13,7 +14,7 @@ Paperdesk gom các tác vụ tài liệu lặp lại vào một dashboard. Phiê
 
 ## Thiết lập, kiểm thử và vận hành
 
-Xem [README](../README.md) cho lệnh cài đặt, khởi động và kiểm thử. Cấu hình duy nhất hiện tại là biến `PORT` (mặc định 8765). Không cần tài khoản hoặc khóa API.
+Xem [README](../README.md) cho lệnh cài đặt, khởi động và kiểm thử. Cấu hình gồm `PORT` (mặc định 8765) và `LIBREOFFICE_PATH` tùy chọn cho công cụ Word. Không cần tài khoản hoặc khóa API.
 
 Giao diện tạo lượt chạy nền, đọc tiến trình mỗi 600 ms và giữ mã lượt chạy trong trình duyệt để nối lại khi tải lại trang. Một worker xử lý tuần tự; preview và xuất PDF dùng chung khóa để tránh truy cập engine đồng thời. Trong lúc tải lên, giao diện báo đang tải; tiến trình file/trang bắt đầu sau khi máy chủ nhận đủ dữ liệu.
 
@@ -27,6 +28,7 @@ Kho mẫu tồn tại qua khởi động lại tại `data/presets.json`, tách 
 
 ## Mục lục
 
+- [Word sang PDF hàng loạt](features/word-to-pdf.md)
 - [Công cụ watermark PDF](features/watermark.md)
 - [Giao diện và bố cục](features/interface.md)
 - [Nhật ký hoạt động](activity-log.md)
