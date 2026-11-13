@@ -70,3 +70,11 @@
 - Browser thực tế localhost:18765: mở PDF thử2trang, chọn logo ảnh, xem trước, khoanh footer, tải /Users/ithacuco/Downloads/da-xoa-watermark.pdf. Mở lại kết quả bằng engine xác minh cả2trang không còn ảnh/logo hay chữ FOOTER WATERMARK, vẫn còn NOI DUNG TAI LIEU - KEEP. PDF tự tạo, chưa có PDF nguồn người dùng; hai ảnh mẫu không đủ xác minh tách watermark giữa trang. Đây là kiểm tra local, không phải VPS.
 - Tài liệu: [xoá watermark](features/remove-watermark.md), [tổng quan](README.md), [cách dùng](../README.md). Một PDF/lượt, đồng bộ chưa có progress cho xoá; ảnh scan dính chữ phải khoanh vùng và mất nội dung trong vùng.
 - GitHub: commit local phạm vi công cụ xoá; chưa push do không có remote. Giữ thay đổi giao diện/Word song song ngoài phạm vi commit. VPS: chưa triển khai vì không có đích/cấu hình; không có kiểm thử sau triển khai VPS.
+
+## 2026-11-13 16:49 Asia/Ho_Chi_Minh — Kiểm thử PDF thật và hỗ trợ nhóm ảnh
+
+- Yêu cầu: thử file Thang nhiệt độ (HS).pdf trên Desktop; giữ nguyên nguồn. File15trang có nền watermark giữa trang và footer chung một ảnh, hai logo header riêng, cả3 đặt trong Form XObject.
+- Sửa: chọn/xoá ảnh trong nhóm Form XObject, clone tài nguyên và stream riêng từng trang, xử lý Resources kế thừa từ Pages; từ chối nhóm thiếu tài nguyên riêng/vòng lặp/quá sâu. Cắt khung chọn theo trang hiển thị. Giữ mọi thay đổi task khác.
+- Kết quả: output/pdf/Thang-nhiet-do-HS-da-xoa-watermark.pdf đủ15trang, bỏ45lệnh ảnh watermark. Text trích xuất15/15trang bằng nguồn tuyệt đối, ảnh bài tập giữ đúng digest/thứ tự trên mọi trang, SHA256 nguồn không đổi. Poppler render15trang và xem contact sheet; QA độc lập /root/removal_qa xem trang1/8 và kiểm thêm chỉ xoá trang1:14trang ngoài phạm vi giống nguồn từng pixel. Không đưa PDF nguồn/kết quả vào Git.
+- Kiểm tra: toàn suite53/53 đạt,13 removal/API; JS syntax và diff check đạt. Test nhóm dùng chung giữ chữ và phạm vi, inherited resources đạt sau sửa. Hai ảnh mẫu trước không đủ phát hiện nhóm ảnh; PDF thật đã được nghiệm thu cho cấu trúc này.
+- Tài liệu: cập nhật [hành vi/giới hạn xoá watermark](features/remove-watermark.md). GitHub: commit local, chưa push vì không có remote. VPS: không triển khai, chưa có đích/cấu hình; chỉ kiểm thử local.

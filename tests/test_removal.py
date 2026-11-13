@@ -135,12 +135,44 @@ class RemovalTests(unittest.TestCase):
             self.assertEqual(len(infos), 1)
             self.assertEqual(infos[0]['digest'], before)
 
-    def test_form_xobject_images_not_offered_as_direct_candidates(self):
-        with fitz.open(stream=fixture(1), filetype='pdf') as source, fitz.open() as doc:
-            page = doc.new_page(width=400, height=500)
-            page.show_pdf_page(page.rect, source, 0)
+    def test_inherited_page_resources_are_removed(self):
+        with fitz.open(stream=fixture(1), filetype='pdf') as doc:
+            page = doc[0]
+            resource = doc.xref_get_key(page.xref, 'Resources')[1]
+            parent = int(doc.xref_get_key(page.xref, 'Parent')[1].split()[0])
+            doc.xref_set_key(parent, 'Resources', resource)
+            doc.xref_set_key(page.xref, 'Resources', 'null')
             data = doc.tobytes()
-        self.assertEqual(removal.inspect(data, 1)['candidates'], [])
+        selected = removal.inspect(data, 1)['candidates'][0]['id']
+        result, count = removal.process(data, opts(images=json.dumps([selected])))
+        self.assertEqual(count, 1)
+        with fitz.open(stream=result, filetype='pdf') as doc:
+            self.assertEqual(len(doc[0].get_image_info()), 0)
+            self.assertIn('KEEP OVERLAP', doc[0].get_text())
+
+    def test_nested_shared_form_removal_preserves_text_images_and_scope(self):
+        with fitz.open(stream=fixture(1, nested=True), filetype='pdf') as source, fitz.open() as doc:
+            for _ in range(2):
+                page = doc.new_page(width=400, height=500)
+                page.show_pdf_page(page.rect, source, 0)
+            data = doc.tobytes()
+        inspected = removal.inspect(data, 1)
+        self.assertEqual(len(inspected['candidates']), 2)
+        selected = inspected['candidates'][0]['id']
+        result, count = removal.process(data, opts(images=json.dumps([selected]), pages='custom', page_range='1'))
+        self.assertEqual(count, 1)
+        with fitz.open(stream=data, filetype='pdf') as before, fitz.open(stream=result, filetype='pdf') as after:
+            for original, changed in zip(before, after):
+                self.assertEqual(original.get_text(), changed.get_text())
+            self.assertEqual(len(after[0].get_image_info()), 1)
+            self.assertEqual(len(after[1].get_image_info()), 2)
+            self.assertEqual(before[1].get_pixmap().samples, after[1].get_pixmap().samples)
+            blue_before = before[0].get_image_info(hashes=True)[1]['digest']
+            self.assertEqual(after[0].get_image_info(hashes=True)[0]['digest'], blue_before)
+        all_result, all_count = removal.process(data, opts(images=json.dumps([selected])))
+        self.assertEqual(all_count, 2)
+        with fitz.open(stream=all_result, filetype='pdf') as after:
+            self.assertEqual([len(p.get_image_info()) for p in after], [1, 1])
 
     def test_preview_matches_export(self):
         data = fixture(pages=1)

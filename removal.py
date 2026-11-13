@@ -66,6 +66,75 @@ def strip_images(stream, names):
     return stream, len(spans)
 
 
+def remove_object_images(doc, page, targets):
+    """Clone form/resources per selected page before modifying nested streams."""
+    count = 0
+    def dictionary(kind, value):
+        if kind == 'xref':
+            return doc.xref_object(int(value.split()[0]))
+        if kind == 'dict':
+            return value
+        raise ValueError('Nhóm ảnh có cấu trúc tài nguyên chưa hỗ trợ; hãy khoanh vùng.')
+    def clone(owner, stream, active):
+        nonlocal count
+        if owner in active or len(active) > 30:
+            raise ValueError('Nhóm ảnh lồng quá sâu hoặc có vòng lặp; hãy khoanh vùng.')
+        active = active | {owner}
+        kind, value = doc.xref_get_key(owner, 'Resources')
+        if kind == 'null' and owner == page.xref:
+            parent = owner
+            visited = set()
+            while kind == 'null':
+                if parent in visited:
+                    raise ValueError('Cấu trúc trang có vòng lặp.')
+                visited.add(parent)
+                p_kind, p_value = doc.xref_get_key(parent, 'Parent')
+                if p_kind != 'xref':
+                    break
+                parent = int(p_value.split()[0])
+                kind, value = doc.xref_get_key(parent, 'Resources')
+        if kind == 'null':
+            raise ValueError('Nhóm ảnh không có tài nguyên riêng; hãy dùng khoanh vùng.')
+        resource = doc.get_new_xref()
+        doc.update_object(resource, dictionary(kind, value))
+        kind, value = doc.xref_get_key(resource, 'XObject')
+        if kind == 'null':
+            return stream
+        objects = doc.get_new_xref()
+        doc.update_object(objects, dictionary(kind, value))
+        doc.xref_set_key(resource, 'XObject', f'{objects} 0 R')
+        doc.xref_set_key(owner, 'Resources', f'{resource} 0 R')
+        names = set()
+        for name in doc.xref_get_keys(objects):
+            kind, value = doc.xref_get_key(objects, name)
+            if kind != 'xref':
+                continue
+            ref = int(value.split()[0])
+            if ref in targets:
+                if not re.fullmatch(r'[A-Za-z0-9_.-]+', name):
+                    raise ValueError('Tên đối tượng ảnh chưa hỗ trợ; hãy khoanh vùng.')
+                names.add(name)
+            elif doc.xref_get_key(ref, 'Subtype')[1] == '/Form':
+                if ref in active:
+                    raise ValueError('Nhóm ảnh có vòng lặp; hãy khoanh vùng.')
+                duplicate = doc.get_new_xref()
+                doc.update_object(duplicate, doc.xref_object(ref))
+                # Carry original ancestors through recursion to detect shared cycles.
+                content = clone(duplicate, doc.xref_stream(ref), active | {ref})
+                doc.update_stream(duplicate, content)
+                doc.xref_set_key(objects, name, f'{duplicate} 0 R')
+        stream, removed = strip_images(stream, names)
+        count += removed
+        return stream
+    original = b'\n'.join(doc.xref_stream(x) for x in page.get_contents())
+    result = clone(page.xref, original, set())
+    new = doc.get_new_xref()
+    doc.update_object(new, '<<>>')
+    doc.update_stream(new, result)
+    page.set_contents(new)
+    return count
+
+
 def settings(form):
     try:
         regions = json.loads(form.get('regions', '[]'))
@@ -93,13 +162,15 @@ def inspect(data, number):
         candidates = []
         seen = set()
         has_inline = any(not i['xref'] for i in page.get_image_info(xrefs=True))
-        direct = set() if has_inline else {i[0] for i in page.get_images(full=True) if i[9] == 0 and re.fullmatch(r'[A-Za-z0-9_.-]+', i[7])}
+        direct = set() if has_inline else {i[0] for i in page.get_images(full=True) if re.fullmatch(r'[A-Za-z0-9_.-]+', i[7])}
         for image in page.get_image_info(hashes=True, xrefs=True):
             digest = image['digest'].hex()
             if image['xref'] not in direct or digest in seen:
                 continue
             seen.add(digest)
-            rect = fitz.Rect(image['bbox']) * page.rotation_matrix
+            rect = (fitz.Rect(image['bbox']) * page.rotation_matrix) & page.rect
+            if rect.is_empty:
+                continue
             candidates.append(dict(id=digest, rect=[rect.x0/page.rect.width, rect.y0/page.rect.height, rect.x1/page.rect.width, rect.y1/page.rect.height], width=image['width'], height=image['height']))
         zoom = min(1.5, 1400/max(page.rect.width, page.rect.height))
         png = page.get_pixmap(matrix=fitz.Matrix(zoom, zoom), alpha=False).tobytes('png')
@@ -114,21 +185,9 @@ def apply(doc, opts):
         info = page.get_image_info(hashes=True, xrefs=True)
         if opts['images'] and any(not i['xref'] for i in info) and any(i['digest'].hex() in opts['images'] for i in info):
             raise ValueError('Trang có ảnh inline; hãy bỏ lựa chọn ảnh và dùng khoanh vùng trên trang này.')
-        # Clean into an isolated content stream, then remove only direct image Do
-        # operators. Resource data can be shared across pages without being changed.
-        page.clean_contents()
-        direct = {i[0]: i[7] for i in page.get_images(full=True)
-                  if i[9] == 0 and re.fullmatch(r'[A-Za-z0-9_.-]+', i[7])}
-        names = {direct[i['xref']] for i in page.get_image_info(hashes=True, xrefs=True)
-                 if i['xref'] in direct and i['digest'].hex() in opts['images']}
-        if names:
-            stream = b'\n'.join(doc.xref_stream(x) for x in page.get_contents())
-            stream, count = strip_images(stream, names)
-            removed += count
-            xref = doc.get_new_xref()
-            doc.update_object(xref, '<<>>')
-            doc.update_stream(xref, stream)
-            page.set_contents(xref)
+        targets = {i['xref'] for i in info if i['xref'] and i['digest'].hex() in opts['images']}
+        if targets:
+            removed += remove_object_images(doc, page, targets)
         for region in opts['regions']:
             bounds = page.rect
             visible = fitz.Rect(region[0]*bounds.width, region[1]*bounds.height, region[2]*bounds.width, region[3]*bounds.height)
