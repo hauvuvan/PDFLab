@@ -4,7 +4,13 @@
 
 ## Mục đích và sử dụng
 
-Mở **Word sang PDF** từ dashboard hoặc thanh bên. Kéo thả/chọn DOC và DOCX, bỏ file không cần rồi bấm **Chuyển sang PDF**. Tối đa 100 file, tổng dung lượng trên giao diện 195 MB; máy chủ giới hạn cả request 200 MB. Theo dõi tên file hiện tại và số file hoàn tất. Khi xong, bấm **Tải ZIP PDF và báo cáo**. Tên trùng được thêm số; lỗi từng file không dừng các file còn lại. ZIP chứa PDF thành công, `bao-cao.json`, `tien-trinh.jsonl`. Toàn bộ file lỗi vẫn tải được log riêng.
+Mở **Word sang PDF** từ dashboard hoặc thanh bên. Kéo thả/chọn DOC và DOCX, bỏ file không cần rồi bấm **Chuyển sang PDF**. Tối đa 100 file, tổng dung lượng trên giao diện 195 MB; máy chủ giới hạn cả request 200 MB. Theo dõi tên file hiện tại và số file hoàn tất. Khi xong, bấm **Tải … PDF (.zip)**. Tên trùng được thêm số; lỗi từng file không dừng các file còn lại. ZIP chứa PDF thành công, `bao-cao.json`, `tien-trinh.jsonl`. Toàn bộ file lỗi vẫn tải được log riêng.
+
+## Giao diện và trạng thái
+
+Màn hình chia danh sách tài liệu và khối chuyển đổi/tải xuống. Các khối cách nhau 24px, nội dung panel đệm 24px, nhóm liên quan cách 8–16px và nhóm thao tác cách 20–24px. Bỏ tất cả chỉ hiện khi có file; từng dòng có tên, dung lượng và nút bỏ. File chọn trùng tên/dung lượng/thời gian sửa được bỏ qua. Lỗi đầu vào hiển thị cạnh vùng chọn.
+
+Nút chính hiển thị số file, khóa khi đang gửi/chạy. Hoàn tất đổi sang tải ZIP nổi bật; nhật ký là liên kết phụ, chi tiết từng file nằm bên dưới. Khi mất kết nối theo dõi, giữ mã lượt và khóa gửi lô mới; dùng **Kết nối lại tiến trình** để đọc tiếp đúng lượt. Nếu lượt không còn (404), cho chọn/chạy lại. Mất phản hồi lúc tải lên ban đầu có thể chưa nhận được mã lượt; chưa bảo đảm chống lặp trong tình huống đó.
 
 ## Cấu hình và vận hành
 

@@ -2,6 +2,7 @@ const $ = s => document.querySelector(s);
 let files = [], logoURL, previewURL, downloadURL, busy = false, revision = 0, savedLogo = null, presets = [];
 const form = $('#watermark-form');
 function navigate(editor) {
+  $('#word-editor').hidden = true; $('#nav-word').classList.remove('active');
   $('#dashboard').hidden = editor; $('#editor').hidden = !editor;
   $('#nav-home').classList.toggle('active', !editor); $('#nav-watermark').classList.toggle('active', editor);
   $('#breadcrumb').textContent = editor ? 'Watermark PDF' : 'Tất cả công cụ';
@@ -9,7 +10,7 @@ function navigate(editor) {
 }
 $('#nav-home').onclick = $('#back').onclick = () => navigate(false);
 $('#nav-watermark').onclick = $('#open-watermark').onclick = () => navigate(true);
-window.addEventListener('hashchange', () => navigate(location.hash === '#watermark'));
+window.addEventListener('hashchange', () => {if(location.hash !== '#word')navigate(location.hash === '#watermark');});
 if(location.hash === '#watermark') navigate(true);
 function message(text, error=false) { $('#status').hidden=false; $('#status').textContent=text; $('#status').classList.toggle('error',error); }
 function stale() {revision++;syncActions(); if(!$('#preview-image').hidden) $('#preview-note').textContent='Có thay đổi chưa xem trước. Chọn Cập nhật.';}

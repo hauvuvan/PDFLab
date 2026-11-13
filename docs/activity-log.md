@@ -78,3 +78,13 @@
 - Kết quả: output/pdf/Thang-nhiet-do-HS-da-xoa-watermark.pdf đủ15trang, bỏ45lệnh ảnh watermark. Text trích xuất15/15trang bằng nguồn tuyệt đối, ảnh bài tập giữ đúng digest/thứ tự trên mọi trang, SHA256 nguồn không đổi. Poppler render15trang và xem contact sheet; QA độc lập /root/removal_qa xem trang1/8 và kiểm thêm chỉ xoá trang1:14trang ngoài phạm vi giống nguồn từng pixel. Không đưa PDF nguồn/kết quả vào Git.
 - Kiểm tra: toàn suite53/53 đạt,13 removal/API; JS syntax và diff check đạt. Test nhóm dùng chung giữ chữ và phạm vi, inherited resources đạt sau sửa. Hai ảnh mẫu trước không đủ phát hiện nhóm ảnh; PDF thật đã được nghiệm thu cho cấu trúc này.
 - Tài liệu: cập nhật [hành vi/giới hạn xoá watermark](features/remove-watermark.md). GitHub: commit local, chưa push vì không có remote. VPS: không triển khai, chưa có đích/cấu hình; chỉ kiểm thử local.
+
+
+## 2026-11-13 16:49 Asia/Ho_Chi_Minh — Tối ưu UI UX và khoảng cách Word sang PDF
+
+- Yêu cầu: tối ưu UI UX; phản hồi ảnh giao diện cũ có các phần tử sát nhau, khoảng cách thiếu nhất quán.
+- Thay đổi: giao diện Word hai cột chọn file/chuyển đổi, panel đệm24px, khối cách24px, tiêu đề cách vùng chọn20px, nhịp8/16/20/24px; Bỏ tất cả cùng hàng tiêu đề/chỉ hiện khi có file; danh sách tên/dung lượng/icon/nút bỏ. Tổng dung lượng, bỏ chọn trùng, lỗi sát vùng nhập. CTA theo trạng thái, tải ZIP nổi bật sau hoàn tất, nhật ký phụ, bảng kết quả riêng. Theo dõi mất kết nối giữ job/khóa tạo lô mới/nút kết nối lại; 404 cho chạy lại. Sửa điều hướng hash Word không bị router watermark đẩy về dashboard.
+- QA độc lập `/root/word_ui_qa`:52/52 unittest đạt tại thời điểm kiểm; JS syntax, DOM selector/không ID trùng và diff check đạt. Harness tương tác Node VM kiểm rỗng/chọn/bỏ/trùng/sai đuôi, mất kết nối và retry GET cùng id không POST trùng, lô hỗn hợp/toàn lỗi/404. Bổ sung CSS spacing được agent rà scope và xem ảnh1280px đạt; không ảnh hưởng tool khác.
+- Browser thực tế localhost8773: chọn DOCX→chuyển1/1 thành công→PDF1trang, nút tải ZIP và log; chuyển dashboard rồi vào Word giữ kết quả và hash đúng. Đo DOM khoảng cách khối24px, padding24px, heading→layout24px, title→drop20px. Ảnh kiểm tra /tmp/word-ui-spacing.png. Chưa thử mạng chậm cấp hệ điều hành/lô195MB. Đây là kiểm tra local, không phải VPS.
+- Tài liệu: cập nhật [Word sang PDF](features/word-to-pdf.md). Giữ riêng thay đổi tên thương hiệu, launcher và tài liệu task khác đang làm song song.
+- GitHub: commit local phần UI Word; chưa push vì không có remote. VPS: chưa triển khai, chưa có đích/cấu hình; bản kiểm tra local tại http://127.0.0.1:8773/#word.

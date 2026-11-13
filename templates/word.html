@@ -1,0 +1,34 @@
+<section id="word-editor" hidden>
+  <button id="word-back" class="back">← Công cụ</button>
+  <div class="word-heading"><div><h1>Word sang PDF</h1><p class="intro">Chuyển nhiều tài liệu trong một lần.</p></div><span id="word-engine" class="word-badge" role="status">Đang kết nối…</span></div>
+  <div class="word-layout">
+    <div class="panel word-source">
+      <div class="panel-title"><span class="step">1</span><h2>Chọn tài liệu</h2><button id="word-clear" class="text-button" type="button" hidden>Bỏ tất cả</button></div>
+      <label class="drop" id="word-drop"><span class="upload-icon" aria-hidden="true">↥</span><strong>Kéo file Word vào đây</strong><span>hoặc <u>Chọn file</u></span><small>DOC, DOCX · Tối đa 100 file · 195 MB</small><input type="file" id="word-files" aria-label="Chọn file Word" accept=".doc,.docx" multiple></label>
+      <p id="word-input-error" class="word-error" role="alert" hidden></p>
+      <div id="word-selection" class="word-selection" hidden><span id="word-count"></span><span id="word-size"></span></div>
+      <div id="word-list" class="file-list"></div>
+      <p class="word-note">File gốc được giữ nguyên. Bạn có thể thêm nhiều file cùng lúc.</p>
+    </div>
+    <div class="word-side">
+      <div class="panel word-action">
+        <div class="panel-title"><span class="step">2</span><h2>Chuyển đổi & tải xuống</h2></div>
+        <p id="word-hint">Chọn tài liệu để bắt đầu.</p>
+        <button id="word-start" class="primary" type="button" disabled>Chuyển sang PDF</button>
+        <div id="word-run" hidden>
+          <p id="word-status" role="status" aria-live="polite"></p>
+          <progress id="word-progress" max="1" value="0" aria-label="File Word đã xử lý"></progress>
+          <p id="word-current"></p>
+        </div>
+        <div id="word-downloads"></div>
+        <button id="word-retry" class="secondary" type="button" hidden>Kết nối lại tiến trình</button>
+        <p class="word-note">PDF có thể thay đổi bố cục nếu máy thiếu font của tài liệu.</p>
+      </div>
+      <details class="word-help"><summary>Lưu ý khi chuyển đổi</summary><p>Tài liệu có mật khẩu hoặc bị hỏng sẽ được báo lỗi riêng. Các file còn lại vẫn tiếp tục chuyển đổi.</p><p>Kết quả gồm PDF, báo cáo và log trong một file ZIP.</p></details>
+    </div>
+  </div>
+  <div id="word-result-panel" class="panel" hidden>
+    <div class="panel-title"><h2>Kết quả từng file</h2><span id="word-summary"></span></div>
+    <div id="word-results"></div>
+  </div>
+</section>
