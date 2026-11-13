@@ -1,6 +1,6 @@
 # Trạng thái dự án
 
-Cập nhật: 2026-11-13 16:52 Asia/Ho_Chi_Minh. Đọc cùng [nhật ký hoạt động](activity-log.md) và [tổng quan](README.md). Khi tiếp tục, kiểm tra Git vì có thể có task khác đang thay đổi mã.
+Cập nhật: 2026-11-13 16:54 Asia/Ho_Chi_Minh. Đọc cùng [nhật ký hoạt động](activity-log.md) và [tổng quan](README.md). Khi tiếp tục, kiểm tra Git vì có thể có task khác đang thay đổi mã.
 
 ## Đã làm và có kiểm tra ghi nhận
 
@@ -18,7 +18,8 @@ Cập nhật: 2026-11-13 16:52 Asia/Ho_Chi_Minh. Đọc cùng [nhật ký hoạt
 ## Chưa làm / giới hạn còn lại
 
 - Ghép, tách, nén PDF chưa triển khai theo tài liệu hiện có.
-- Chưa có remote GitHub cấu hình: chưa push. Chưa có đích/cấu hình VPS: chưa triển khai VPS; ứng dụng hiện chạy local.
+- GitHub: remote `origin` là https://github.com/hauvuvan/PDFLab.git; đã push `main` tới `ab9c153`, xác minh SHA remote trùng local. Các thay đổi chưa commit không nằm trong lần push này; xem nhật ký cho cập nhật sau đó.
+- Chưa có đích/cấu hình VPS: chưa triển khai VPS; ứng dụng hiện chạy local.
 - Các giới hạn kiểm thử như lô lớn, tài liệu Word phức tạp, nền tảng khác và PDF ký số cần xem từng mục nhật ký; không coi là đã đạt.
 
 ## Bước tiếp theo

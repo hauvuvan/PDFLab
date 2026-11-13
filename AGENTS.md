@@ -7,3 +7,5 @@
 - Giữ nguyên thay đổi không liên quan; chỉ commit phần thuộc task. Có remote GitHub và quyền thì push theo quy trình, không force-push hoặc tự merge. Chỉ triển khai khi có đích và cấu hình rõ; sau triển khai phải kiểm thử thực tế và bổ sung log.
 - Với thay đổi mã/tính năng/triển khai, tạo agent kiểm thử độc lập, không tự deploy/push hoặc tạo thêm agent. Tài liệu/quy tắc thuần túy kiểm tra tính nhất quán và liên kết phù hợp.
 - Tính năng lớn cần tài liệu chi tiết, liên kết từ `docs/README.md`; nhật ký chỉ tóm tắt và dẫn tới nguồn chính.
+
+- Sau mỗi task và mỗi lần thử push, báo rõ đã push/chưa push/thất bại, nhánh, commit/link khi có và lý do nếu chưa thành công. Không coi commit local là đã lên GitHub.

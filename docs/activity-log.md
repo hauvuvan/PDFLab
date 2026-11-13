@@ -106,3 +106,11 @@
 - Kiểm tra: đọc tài liệu và trạng thái Git; kiểm tra liên kết tương đối của hai tài liệu mới và diff. Chỉ thay đổi tài liệu, không chạy lại ứng dụng và không nghiệm thu mã đang sửa của task khác.
 - Còn lại: hoàn thiện/kiểm thử các thay đổi đang dở theo task tương ứng; cập nhật trạng thái và nhật ký sau mỗi task.
 - GitHub: commit local phần quy tắc/trạng thái và mục log này; chưa push vì không có remote. VPS: không áp dụng cho thay đổi tài liệu; không triển khai.
+
+## 2026-11-13 16:54 Asia/Ho_Chi_Minh — Kết nối và push GitHub
+
+- Yêu cầu: đẩy repo lên https://github.com/hauvuvan/PDFLab.git và mặc định báo cáo trạng thái push sau mỗi task/lần thử.
+- Thực hiện: xác minh repo rỗng, thêm remote origin, push main và thiết lập upstream. Đã push ab9c153; git ls-remote xác nhận SHA ab9c15368eefcf1a086c411cff02fa02573eb46c khớp HEAD.
+- Tài liệu: cập nhật [quy tắc](../AGENTS.md) và [trạng thái](status.md). Phần log/quy tắc này được lưu và push trong commit tiếp theo của cùng task; xác minh remote sau push.
+- Kiểm tra: diff và liên kết tài liệu; không sửa mã/chạy lại ứng dụng. Giữ nguyên thay đổi chuyển đổi ảnh chưa commit của task khác, không đưa vào push. Lần truy cập mạng ban đầu không phân giải được GitHub; thử lại với quyền mạng đã thành công.
+- GitHub: push mã đã commit thành công lên main; các thay đổi chưa commit vẫn chỉ ở local. VPS: không áp dụng, không triển khai.
