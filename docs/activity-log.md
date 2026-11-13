@@ -20,3 +20,12 @@
 - Tài liệu: [tổng quan/vận hành](README.md), [API và hành vi](features/watermark.md), [cách dùng](../README.md).
 - GitHub: lưu commit local sau kiểm tra; chưa push vì không có remote cấu hình.
 - VPS: chưa triển khai, không có đích/cấu hình VPS; công cụ dành cho localhost. Không tuyên bố đã kiểm thử sau triển khai.
+
+## 2026-11-13 16:12 Asia/Ho_Chi_Minh — Làm gọn giao diện
+
+- Yêu cầu: giao diện phần mềm hiện đại, thân thiện, bỏ minh họa/chữ thừa; tham khảo mẫu trên mạng.
+- Thay đổi: bỏ hero/slogan và công cụ chưa triển khai; danh sách công cụ gọn, hệ màu trung tính/xanh, form và preview hai cột, responsive, focus bàn phím; bổ sung kiểu hiển thị cho điều khiển nâng cao đang được sửa trong task khác, giữ nguyên chức năng/ID.
+- Kiểm tra độc lập: `/root/ui_qa`: JS syntax đạt, ID không trùng/khớp selector; Flask GET200, preview PNG200/2 trang, job202→success1/failed0→ZIP200. Toàn bộ working tree tại thời điểm QA 32/33 test đạt; một lỗi alpha chữ thực tế165 so với ≤128 ở test_advanced.py:80 thuộc engine đang sửa ngoài task, chưa xác nhận hết lỗi.
+- Kiểm tra giao diện thực tế: trình duyệt tại http://127.0.0.1:8767, dashboard→editor hiển thị đúng; điện thoại viewport390×844, content375px không tràn ngang; desktop hai cột. Không ghi nhận lỗi console tại8767; có một lỗi từ8765 cũ do JS/template khác phiên bản khi sửa đồng thời. Không nghiệm thu đầy đủ tính năng nâng cao của task khác.
+- Tài liệu: [giao diện](features/interface.md), [mục lục](README.md). Chỉ commit phần UI/tài liệu; giữ thay đổi khác trong working tree.
+- GitHub: commit local; chưa push do chưa có remote. VPS: chưa triển khai, không có đích/cấu hình; đây là kiểm tra local, không phải sau triển khai VPS.

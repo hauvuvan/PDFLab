@@ -25,4 +25,5 @@ Nếu lỗi: kiểm tra thông báo trên trang và báo cáo trong ZIP, chia l�
 ## Mục lục
 
 - [Công cụ watermark PDF](features/watermark.md)
+- [Giao diện và bố cục](features/interface.md)
 - [Nhật ký hoạt động](activity-log.md)
