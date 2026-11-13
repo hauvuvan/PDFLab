@@ -67,13 +67,48 @@ $('#preview-button').onclick=async()=>{
   }catch(error){message(error.message,true);}finally{setBusy(false);}
 };
 function reports(items){const box=$('#results');box.hidden=false;for(const item of items){const p=document.createElement('p');p.textContent=item.status==='ok' ? `✓ ${item.file} → ${item.output} · ${item.pages} trang` : `⚠ ${item.file}: ${item.error}`;box.append(p);}}
+function jobLink(key, kind, label) {
+  const link=document.createElement('a');link.href=`/api/jobs/${key}/${kind}`;link.className='download';link.textContent=label;$('#results').append(link);$('#results').hidden=false;return link;
+}
+const pause = ms => new Promise(resolve=>setTimeout(resolve,ms));
+async function followJob(key){
+  let shown=0, retries=0;
+  jobLink(key,'log','↓ Tải log tiến trình và lỗi');
+  while(true){
+    let job;
+    try {
+      const response=await fetch(`/api/jobs/${key}`);
+      if(!response.ok)throw new Error((await errorBody(response)).error);
+      job=await response.json();retries=0;
+    } catch(error) {
+      if(++retries>=5)throw new Error('Không đọc được tiến trình. Tải log bên dưới để kiểm tra; tải lại trang để thử kết nối lại.');
+      message('Kết nối gián đoạn, đang thử đọc lại tiến trình…',true);await pause(1500);continue;
+    }
+    if(job.reports.length>shown){reports(job.reports.slice(shown));shown=job.reports.length;}
+    $('#job-progress').value=job.completed;
+    $('#job-progress').max=job.total;
+    message(`${job.state==='queued'?'Đang chờ':'Đang xử lý'} · ${job.completed}/${job.total} file hoàn tất · ${job.success} thành công, ${job.failed} lỗi`+
+      (job.current ? ` · ${job.current} · trang ${job.page}/${job.pages||'…'}` : ''));
+    if(job.state==='completed'){
+      if(job.success)jobLink(key,'result','↓ Tải ZIP kết quả và log').click();
+      message(`Hoàn tất ${job.completed}/${job.total} file: ${job.success} thành công, ${job.failed} lỗi. Log lưu tiến trình và chi tiết lỗi.`,job.failed>0);
+      localStorage.removeItem('paperdesk-job');return;
+    }
+    if(job.state==='error'){localStorage.removeItem('paperdesk-job');throw new Error(job.error);}
+    await pause(600);
+  }
+}
+async function trackJob(key){
+  setBusy(true);$('#results').replaceChildren();$('#results').hidden=true;$('#job-progress').hidden=false;
+  try{await followJob(key);}catch(error){message(error.message||'Kết nối bị gián đoạn.',true);}finally{setBusy(false);}
+}
 form.onsubmit=async e=>{
-  e.preventDefault();if(busy)return;const data=payload(false);if(!data)return;setBusy(true);$('#results').replaceChildren();$('#results').hidden=true;message('Đang xử lý '+files.length+' file. Vui lòng giữ trang này mở…');
-  try{const response=await fetch('/api/process',{method:'POST',body:data});if(!response.ok){const body=await errorBody(response);if(body.reports)reports(body.reports);throw new Error(body.error);}
-    const blob=await response.blob();if(downloadURL)URL.revokeObjectURL(downloadURL);downloadURL=URL.createObjectURL(blob);
-    const link=document.createElement('a');link.href=downloadURL;link.download='pdf-watermark.zip';link.className='download';link.textContent='↓ Tải lại file ZIP kết quả';$('#results').append(link);$('#results').hidden=false;link.click();
-    const detail=JSON.parse(response.headers.get('X-Reports')||'[]');
-    if(detail.length)reports(detail);else{const note=document.createElement('p');note.textContent='Danh sách kết quả đầy đủ nằm trong bao-cao.json bên trong ZIP.';$('#results').append(note);}
-    const failed=Number(response.headers.get('X-Failure-Count'));message(`Hoàn tất ${response.headers.get('X-Success-Count')} file${failed ? `; ${failed} file bị lỗi, xem chi tiết bên dưới` : ''}. ZIP kèm báo cáo kết quả.`,failed>0);
+  e.preventDefault();if(busy)return;const data=payload(false);if(!data)return;setBusy(true);message('Đang tải tài liệu lên máy xử lý…');
+  try{
+    const response=await fetch('/api/jobs',{method:'POST',body:data});
+    if(!response.ok)throw new Error((await errorBody(response)).error);
+    const job=await response.json();localStorage.setItem('paperdesk-job',job.id);await trackJob(job.id);
   }catch(error){message(error.message||'Kết nối bị gián đoạn. Hãy thử lại.',true);}finally{setBusy(false);}
 };
+const savedJob=localStorage.getItem('paperdesk-job');
+if(savedJob && /^[a-f0-9]{32}$/.test(savedJob)){navigate(true);trackJob(savedJob);}

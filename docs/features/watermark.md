@@ -36,3 +36,14 @@ Cấu hình: `position=top|center|bottom`, `width=5..95`, `height=1..80`, `opaci
 Chạy lệnh unittest ở [README](../../README.md). Phạm vi: batch/ZIP/báo cáo, bảo toàn văn bản và số trang, link, file trùng tên, trang xoay/crop, alpha, preview và lỗi đầu vào. Kiểm tra thủ công thêm bằng file thực tế của người dùng trước khi dùng số lượng lớn; chưa có file PDF/logo thật được cung cấp trong task ban đầu.
 
 Nguồn kỹ thuật: [PyMuPDF Page](https://pymupdf.readthedocs.io/en/latest/page.html), đặc biệt quy ước tọa độ chèn ảnh trên trang xoay. Script mẫu được đọc tại `/Users/ithacuco/Desktop/them_watermark_tu_dong.py`; không chỉnh sửa script nguồn.
+
+## Tiến trình và log cho xử lý đơn/lô
+
+Chọn một PDF để xử lý riêng hoặc nhiều PDF để chạy lô, dùng cùng nút xuất. Giao diện hiển thị số file đã hoàn tất/tổng số, thành công/lỗi, tên file hiện tại và trang đã xử lý/tổng trang. Thanh tiến trình đo số file hoàn tất, không ước tính thời gian còn lại. Bước ghi/nén PDF có thể tiếp tục sau trang cuối. Các lỗi file không ngăn những file sau chạy; lỗi toàn lượt được báo riêng.
+
+- `POST /api/jobs`: cùng multipart như `/api/process`, trả HTTP 202 và `id`.
+- `GET /api/jobs/<id>`: trạng thái `queued|running|completed|error`, `total`, `completed`, `page`, `pages`, `current`, `success`, `failed`, `reports`, `error`.
+- `GET /api/jobs/<id>/log`: tải JSONL ngay cả khi còn chạy hoặc toàn bộ PDF thất bại. Mỗi dòng có thời gian kèm múi giờ, sự kiện và dữ liệu tiến trình; lỗi có traceback giúp sửa lỗi.
+- `GET /api/jobs/<id>/result`: ZIP khi hoàn tất và có ít nhất một file thành công; ngược lại HTTP 409. Giữ `/api/process` đồng bộ để tương thích khách cũ.
+
+Xem [vận hành và lưu trữ](../README.md) cho nơi lưu, thời hạn, phục hồi khi khởi động lại và giới hạn bộ nhớ. Không hỗ trợ tiếp tục từ trang đang dở sau khi dừng máy chủ.

@@ -14,9 +14,11 @@ Paperdesk gom các tác vụ tài liệu lặp lại vào một dashboard. Phiê
 
 Xem [README](../README.md) cho lệnh cài đặt, khởi động và kiểm thử. Cấu hình duy nhất hiện tại là biến `PORT` (mặc định 8765). Không cần tài khoản hoặc khóa API.
 
-Ứng dụng xử lý mỗi lượt đồng bộ; không có hàng đợi nền. Giữ tab và tiến trình hoạt động đến khi nhận ZIP. Dữ liệu tải lên do Flask/Werkzeug quản lý trong bộ nhớ hoặc file tạm của hệ điều hành trong vòng đời request; ứng dụng không tạo kho lưu tài liệu. ZIP được giữ trong bộ nhớ của request và trình duyệt để tải lại. Đóng tab để giải phóng URL tải kết quả, dừng tiến trình để giải phóng bộ nhớ máy chủ. Không tuyên bố xóa an toàn dữ liệu khỏi thiết bị.
+Giao diện tạo lượt chạy nền, đọc tiến trình mỗi 600 ms và giữ mã lượt chạy trong trình duyệt để nối lại khi tải lại trang. Một worker xử lý tuần tự; preview và xuất PDF dùng chung khóa để tránh truy cập engine đồng thời. Trong lúc tải lên, giao diện báo đang tải; tiến trình file/trang bắt đầu sau khi máy chủ nhận đủ dữ liệu.
 
-Chỉ mở trên localhost; có kiểm tra Host và Origin, không hỗ trợ truy cập qua LAN hoặc reverse proxy. Chạy một worker không song song để hạn chế tăng bộ nhớ vì nhiều lượt xử lý. Không dùng Flask development server làm VPS production. Chưa có đích VPS hay remote GitHub được cấu hình cho dự án.
+Kết quả và log lưu tại `output/jobs/<mã-lượt>/` và được dọn khi tạo lượt mới nếu đã quá 24 giờ. Log JSONL ghi thời gian Asia/Ho_Chi_Minh, sự kiện, tên file, số trang và traceback khi lỗi; có thể chứa tên tài liệu/đường dẫn máy, cần kiểm tra trước khi chia sẻ. Không lưu PDF nguồn vào kho lâu dài. ZIP kết quả có báo cáo và bản log hoàn tất. Dừng máy chủ làm mất trạng thái/hàng đợi trong bộ nhớ, không tự tiếp tục lượt dở dang; file log trên đĩa vẫn còn, có thể đọc trực tiếp. Xóa thư mục lượt đã kết thúc để dọn sớm khi cần. Không xóa thư mục đang chạy. Không tuyên bố xóa an toàn dữ liệu khỏi thiết bị.
+
+Chỉ mở trên localhost; có kiểm tra Host và Origin, không hỗ trợ truy cập qua LAN hoặc reverse proxy. HTTP phục vụ đồng thời để đọc tiến trình; engine xử lý từng file tuần tự. Tránh gửi nhiều lô cùng lúc vì dữ liệu chờ nằm trong bộ nhớ. Không dùng Flask development server làm VPS production. Chưa có đích VPS hay remote GitHub được cấu hình cho dự án.
 
 Nếu lỗi: kiểm tra thông báo trên trang và báo cáo trong ZIP, chia lô nhỏ hơn nếu thiếu bộ nhớ, mở khóa PDF trước, hoặc khởi động lại. Không ghi đè nguồn nên có thể xử lý lại từ file gốc. Khi cập nhật, dừng tiến trình, lưu phiên bản mã cũ hoặc dùng Git để khôi phục, cài requirements tương ứng và chạy lại. Không có migration dữ liệu.
 

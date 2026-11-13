@@ -6,6 +6,7 @@ from pathlib import Path
 from flask import Flask, jsonify, render_template, request, send_file
 from werkzeug.exceptions import RequestEntityTooLarge
 from watermark import options, image_bytes, process, preview
+import jobs
 
 app = Flask(__name__)
 app.config.update(MAX_CONTENT_LENGTH=200 * 1024 * 1024, MAX_FORM_MEMORY_SIZE=1024 * 1024)
@@ -62,12 +63,52 @@ def make_preview():
             number = int(request.form.get('page', '1'))
         except ValueError:
             raise ValueError('Số trang không hợp lệ.')
-        png, pages = preview(pdf.read(), image, size, opts, number)
+        with jobs.ENGINE_LOCK:
+            png, pages = preview(pdf.read(), image, size, opts, number)
         response = send_file(io.BytesIO(png), mimetype='image/png')
         response.headers['X-Page-Count'] = str(pages)
         return response
     except ValueError as e:
         return jsonify(error=str(e)), 400
+
+
+@app.post('/api/jobs')
+def create_job():
+    try:
+        opts, image, size = inputs()
+        files = request.files.getlist('pdfs')
+        if not files or len(files) > 100:
+            raise ValueError('Chọn từ 1 đến 100 file PDF mỗi lượt.')
+        data = []
+        for pdf in files:
+            name = (pdf.filename or 'document.pdf').replace('\\', '/').split('/')[-1]
+            name = ''.join(c for c in name if ord(c) >= 32)[:180] or 'document.pdf'
+            data.append((name, pdf.read()))
+        return jsonify(id=jobs.submit(data, image, size, opts)), 202
+    except ValueError as exc:
+        return jsonify(error=str(exc)), 400
+
+
+@app.get('/api/jobs/<key>')
+def job_status(key):
+    job = jobs.snapshot(key)
+    if not job:
+        return jsonify(error='Không tìm thấy lượt chạy; ứng dụng có thể đã khởi động lại.'), 404
+    return jsonify(job)
+
+
+@app.get('/api/jobs/<key>/<kind>')
+def job_download(key, kind):
+    if len(key) != 32 or any(c not in '0123456789abcdef' for c in key) or kind not in ('log', 'result'):
+        return jsonify(error='Không tìm thấy tài nguyên.'), 404
+    folder = jobs.ROOT / key
+    if not folder.is_dir():
+        return jsonify(error='Kết quả đã hết hạn hoặc không tồn tại.'), 404
+    job = jobs.snapshot(key)
+    if kind == 'result' and (not job or job['state'] != 'completed' or not job['success']):
+        return jsonify(error='Chưa có ZIP thành công để tải.'), 409
+    path = folder / ('progress.jsonl' if kind == 'log' else 'result.zip')
+    return send_file(path, as_attachment=True, download_name=f'{key}-tien-trinh.jsonl' if kind == 'log' else 'pdf-watermark.zip')
 
 
 @app.post('/api/process')
@@ -86,7 +127,8 @@ def batch():
                 try:
                     if not name.lower().endswith('.pdf'):
                         raise ValueError('File không có phần mở rộng PDF.')
-                    result, pages = process(pdf.read(), image, size, opts)
+                    with jobs.ENGINE_LOCK:
+                        result, pages = process(pdf.read(), image, size, opts)
                     desired = opts['prefix'] + name
                     candidate, index = desired, 2
                     while candidate.casefold() in used:
@@ -119,4 +161,4 @@ def too_large(error):
 
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=int(os.environ.get('PORT', 8765)), debug=False, threaded=False)
+    app.run(host='127.0.0.1', port=int(os.environ.get('PORT', 8765)), debug=False, threaded=True)

@@ -87,10 +87,14 @@ def apply_page(page, image, size, opts):
         page.set_rotation(rotation)
 
 
-def process(data, image, size, opts):
+def process(data, image, size, opts, progress=None):
     with open_pdf(data) as doc:
-        for page in doc:
+        if progress:
+            progress(0, len(doc))
+        for index, page in enumerate(doc, 1):
             apply_page(page, image, size, opts)
+            if progress:
+                progress(index, len(doc))
         return doc.tobytes(garbage=3, deflate=True), len(doc)
 
 
