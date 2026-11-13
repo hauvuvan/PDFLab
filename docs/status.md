@@ -26,3 +26,8 @@ Cập nhật: 2026-11-13 16:54 Asia/Ho_Chi_Minh. Đọc cùng [nhật ký hoạt
 
 1. Xác minh và hoàn thiện các thay đổi đang làm theo task tương ứng; chạy kiểm thử phù hợp và ghi bằng chứng.
 2. Sau mỗi task hoàn thiện, cập nhật trang này và thêm mục nhật ký: đã làm, kết quả, chưa làm, bước tiếp theo, GitHub/VPS.
+
+## Cập nhật 2026-11-13 16:58 Asia/Ho_Chi_Minh
+
+- Hoàn tất khoảng cách dashboard12px, mobile không tràn; builder cập nhật thay bản cũ có phục hồi khi lỗi.62/62 tests đạt. Đã thay bundle Applications, Desktop dùng chung symlink.
+- Task này commit riêng và push main theo kết quả báo cáo cuối; các thay đổi công cụ ảnh đang ở working tree không thuộc nghiệm thu task này. VPS không áp dụng.

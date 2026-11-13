@@ -114,3 +114,11 @@
 - Tài liệu: cập nhật [quy tắc](../AGENTS.md) và [trạng thái](status.md). Phần log/quy tắc này được lưu và push trong commit tiếp theo của cùng task; xác minh remote sau push.
 - Kiểm tra: diff và liên kết tài liệu; không sửa mã/chạy lại ứng dụng. Giữ nguyên thay đổi chuyển đổi ảnh chưa commit của task khác, không đưa vào push. Lần truy cập mạng ban đầu không phân giải được GitHub; thử lại với quyền mạng đã thành công.
 - GitHub: push mã đã commit thành công lên main; các thay đổi chưa commit vẫn chỉ ở local. VPS: không áp dụng, không triển khai.
+
+## 2026-11-13 16:58 Asia/Ho_Chi_Minh — Khoảng cách dashboard và thay bản cập nhật
+
+- Yêu cầu: tối ưu khoảng cách thẻ công cụ và bỏ bản cũ khi thêm bản cập nhật.
+- Sửa: grid gap12px chung, bỏ margin riêng thẻ; mobile menu xuống dòng. Builder tạo bundle hoàn chỉnh rồi thay đúng PDFLabs cũ, dọn cũ sau thành công, giữ/khôi phục bản cũ nếu compile/cài lỗi; từ chối bundle khác/symlink.
+- QA độc lập /root/spacing_update_qa:62/62 unittest đạt,4 regression cập nhật bundle. Browser desktop đo4 khoảng đều12px; mobile390 content375 không tràn,4 khoảng12px. Diff check đạt.
+- SAU cập nhật local: đã thay /Applications/PDFLabs.app; Desktop symlink vẫn trỏ đúng. Nạp lại localhost8765; agent QA health200/version1.2.0, home/removal/hai công cụ ảnh200,2preset còn nguyên; browser bản cuối khoảng cách đạt. Không có VPS.
+- Tài liệu: [giao diện](features/interface.md), [launcher](features/macos-launcher.md), [trạng thái](status.md). Giữ thay đổi công cụ ảnh ngoài task. GitHub: chuẩn bị push commit task lên main/origin, ghi kết quả trong báo cáo cuối; không coi commit local là đã push. VPS không áp dụng, ứng dụng local.

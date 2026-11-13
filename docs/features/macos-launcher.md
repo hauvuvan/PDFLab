@@ -12,7 +12,7 @@ Chạy `start.command` một lần để cài thư viện nếu chưa có. Tạo
 .venv/bin/python scripts/build_macos_app.py
 ```
 
-Kết quả ở `output/macos/PDFLabs.app`. Có thể tạo trực tiếp ở thư mục mong muốn bằng đối số đường dẫn. Cần Command Line Tools (clang) để tạo executable macOS native. Trình tạo từ chối ghi đè bundle có sẵn. Launcher chứa đường dẫn tuyệt đối tới dự án; nếu chuyển dự án cần tạo lại app. Thư viện được quản lý bởi dự án, không đóng gói vào bundle.
+Kết quả ở `output/macos/PDFLabs.app`. Có thể tạo trực tiếp ở thư mục mong muốn bằng đối số đường dẫn. Cần Command Line Tools (clang) để tạo executable macOS native. Khi đã có PDFLabs.app đúng định danh, trình tạo dựng bản mới trong thư mục tạm cùng đích, thay thế bản cũ sau khi biên dịch đạt và dọn bản cũ. Nếu tạo bản mới lỗi thì giữ nguyên bản cũ; nếu đổi tên cài đặt lỗi thì phục hồi bản cũ. Không ghi đè ứng dụng khác hoặc đích là symlink. Launcher chứa đường dẫn tuyệt đối tới dự án; nếu chuyển dự án cần tạo lại app. Thư viện được quản lý bởi dự án, không đóng gói vào bundle.
 
 ## Hành vi và vận hành
 

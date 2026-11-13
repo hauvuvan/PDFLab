@@ -24,3 +24,7 @@ Giao diện ưu tiên thao tác tài liệu: dashboard chỉ hiển thị công 
 Kiểm tra desktop, điện thoại 390 px, điều hướng, trường nhập, trạng thái rỗng; xác minh preview và xuất ZIP. Không có thay đổi API, dữ liệu hay cấu hình triển khai. Sửa tại `templates/index.html`, `static/style.css`; khởi động lại ứng dụng sau cập nhật để tránh cache template. Khôi phục bằng phiên bản Git trước nếu cần.
 
 Tham khảo cách tổ chức công cụ: [Adobe Acrobat](https://helpx.adobe.com/acrobat/desktop/edit-documents/add-backgrounds-and-watermarks/add-watermarks.html), [iLovePDF](https://www.ilovepdf.com/pdf_add_watermark).
+
+## Khoảng cách dashboard
+
+Danh sách công cụ dùng grid một cột với gap12px chung, không đặt margin riêng từng thẻ; thẻ liên kết và nút cùng bố cục. Thanh điều hướng màn hình nhỏ xuống dòng để không gây tràn ngang.

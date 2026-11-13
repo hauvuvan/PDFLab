@@ -10,7 +10,7 @@ import tempfile
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def build(destination):
+def build_bundle(destination):
     app = Path(destination) / 'PDFLabs.app'
     if app.exists():
         raise FileExistsError('PDFLabs.app đã tồn tại ở đích; không ghi đè tự động.')
@@ -50,8 +50,39 @@ int main(void) {
                       'CFBundleShortVersionString': '1.0', 'CFBundlePackageType': 'APPL',
                       'CFBundleExecutable': 'PDFLabs', 'LSUIElement': True,
                       'NSHighResolutionCapable': True}, stream)
-    print(app)
     return app
+
+
+def build(destination):
+    destination = Path(destination)
+    destination.mkdir(parents=True, exist_ok=True)
+    target = destination / 'PDFLabs.app'
+    if target.is_symlink():
+        raise ValueError('Đích là liên kết; hãy cập nhật ứng dụng gốc.')
+    if target.exists():
+        try:
+            with (target / 'Contents/Info.plist').open('rb') as stream:
+                identity = plistlib.load(stream).get('CFBundleIdentifier')
+        except (OSError, ValueError, plistlib.InvalidFileException):
+            raise ValueError('Không nhận diện được ứng dụng cũ; không thay thế.')
+        if identity != 'local.pdflabs.launcher':
+            raise ValueError('Đích không phải PDFLabs; không thay thế.')
+    # Build completely before moving the installed version out of the way.
+    with tempfile.TemporaryDirectory(prefix='.pdflabs-update-', dir=destination) as temporary:
+        replacement = build_bundle(Path(temporary))
+        backup = Path(temporary) / 'previous.app'
+        existed = target.exists()
+        if existed:
+            target.rename(backup)
+        try:
+            replacement.rename(target)
+        except BaseException:
+            if existed:
+                backup.rename(target)
+            raise
+        # TemporaryDirectory removes the previous version only after installation.
+    print(target)
+    return target
 
 
 if __name__ == '__main__':
