@@ -98,3 +98,11 @@
 - SAU cài/khởi động lại 2026-11-13 16:51 Asia/Ho_Chi_Minh: môi trường http://127.0.0.1:8765, health HTTP200/version1.2.0; QA kiểm tra route home/removal/presets200 và2 mẫu còn nguyên, launcher.log không traceback/error. Agent chính mở lại khi mã nguồn thay đổi: PID44801→45093, source_version khớp mã trên đĩa và project_id đúng; Safari thể hiện các tính năng mới nhất đang có trên máy. Các phiên cũ trước migration đã kiểm tra0 job active rồi mới dừng đúng PID.
 - Giới hạn: check busy/TERM chưa nguyên tử, tránh gửi tác vụ từ tab khác đúng lúc cập nhật; chưa thử trên máy Mac khác. Không dùng chứng nhận VPS cho kiểm tra local.
 - GitHub: commit local phạm vi launcher/tên/version; chưa push do chưa có remote. VPS: không áp dụng, ứng dụng local. Các tính năng khác đang sửa đồng thời được giữ nguyên.
+
+## 2026-11-13 16:52 Asia/Ho_Chi_Minh — Quy tắc lưu tiến độ sau mỗi task
+
+- Yêu cầu: mặc định ghi lại đã làm gì, tới đâu và còn gì chưa làm sau mỗi lần giao việc và hoàn thiện, để tiếp tục dự án về sau.
+- Thay đổi: thêm [quy tắc dự án](../AGENTS.md) và [trạng thái đọc nhanh](status.md), tổng hợp từ nhật ký/tài liệu/Git hiện có; phân biệt rõ phần đã kiểm tra với thay đổi đang dở.
+- Kiểm tra: đọc tài liệu và trạng thái Git; kiểm tra liên kết tương đối của hai tài liệu mới và diff. Chỉ thay đổi tài liệu, không chạy lại ứng dụng và không nghiệm thu mã đang sửa của task khác.
+- Còn lại: hoàn thiện/kiểm thử các thay đổi đang dở theo task tương ứng; cập nhật trạng thái và nhật ký sau mỗi task.
+- GitHub: commit local phần quy tắc/trạng thái và mục log này; chưa push vì không có remote. VPS: không áp dụng cho thay đổi tài liệu; không triển khai.
