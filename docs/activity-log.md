@@ -132,3 +132,5 @@
 - QA độc lập `/root/test_images`: 58/58 unittest đạt, gồm 5 test mới kiểm nội dung/màu/thứ tự/DPI/EXIF/alpha, PDF mã hóa/hỏng, giới hạn và HTTP; JS syntax, Python compile (cache /tmp), diff check đạt. Browser local8774: chọn2ảnh→đổi thứ tự→ghép→tải PDF; PDF2trang→chuyển PNG→link ZIP hiện. Trang công cụ HTTP200. Chưa thử drag/drop trực tiếp, lô sát195MB hoặc máy khác; không có tiến trình từng trang/khôi phục sau reload.
 - Tài liệu: [PDF và ảnh](features/pdf-images.md), cập nhật README/tổng quan và trạng thái. Giữ thay đổi sắp xếp nhật ký có sẵn ngoài phạm vi trong working tree.
 - GitHub: chuẩn bị commit phần task trên main và push origin; kết quả push ghi bổ sung sau xác minh. VPS: chưa triển khai, không có đích/cấu hình; đây là kiểm tra local.
+
+- Xác minh GitHub 2026-11-13 17:01 Asia/Ho_Chi_Minh: đã push origin/main thành công commit `61d9e97` (hai công cụ và kiểm thử). VPS chưa triển khai vì chưa có cấu hình.
