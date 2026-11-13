@@ -122,3 +122,5 @@
 - QA độc lập /root/spacing_update_qa:62/62 unittest đạt,4 regression cập nhật bundle. Browser desktop đo4 khoảng đều12px; mobile390 content375 không tràn,4 khoảng12px. Diff check đạt.
 - SAU cập nhật local: đã thay /Applications/PDFLabs.app; Desktop symlink vẫn trỏ đúng. Nạp lại localhost8765; agent QA health200/version1.2.0, home/removal/hai công cụ ảnh200,2preset còn nguyên; browser bản cuối khoảng cách đạt. Không có VPS.
 - Tài liệu: [giao diện](features/interface.md), [launcher](features/macos-launcher.md), [trạng thái](status.md). Giữ thay đổi công cụ ảnh ngoài task. GitHub: chuẩn bị push commit task lên main/origin, ghi kết quả trong báo cáo cuối; không coi commit local là đã push. VPS không áp dụng, ứng dụng local.
+
+- Kết quả GitHub: push `main` lên `origin/main` thành công, commit `dff51b9` (Normalize dashboard spacing and replace old launcher on update). Log/trạng thái bổ sung trong commit tài liệu tiếp theo; không triển khai lại cho thay đổi log.
