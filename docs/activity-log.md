@@ -40,3 +40,5 @@
 - Giới hạn: watermark text là PNG trong suốt chất lượng cao, không phải selectable text; ảnh xoay giới hạn2400px, font macOS (Linux fallback chưa nghiệm thu); chưa thử Windows, lô200MB/kho64MB hoặc PDF ký số thật. Chưa có nhiều lớp watermark riêng trong một lượt.
 - Tài liệu: [Watermark chi tiết](features/watermark.md) là nguồn chính cho tùy chọn/API/mẫu/sao lưu/khôi phục; cập nhật [Tổng quan](README.md), [hướng dẫn](../README.md). Giữ các thay đổi tiến trình và giao diện được cập nhật song song trong dự án.
 - GitHub: lưu commit local của phạm vi watermark sau kiểm tra; chưa push vì chưa có remote. VPS: chưa triển khai, không có đích/cấu hình; chỉ kiểm thử bản chạy cục bộ.
+
+- Xác minh sau khởi động lại 2026-11-13 16:12 +0700: localhost:8765 GET /health HTTP200, version1.1.0; GET /api/presets HTTP200, 2 mẫu còn nguyên. Bản mã watermark commit9ed88d3. Đây là kiểm tra local, không có VPS.
