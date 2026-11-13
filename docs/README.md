@@ -30,6 +30,8 @@ Kho mẫu tồn tại qua khởi động lại tại `data/presets.json`, tách 
 
 ## Mục lục
 
+- [PDF sang ảnh và ghép ảnh thành PDF](features/pdf-images.md)
+
 - [Xoá watermark PDF](features/remove-watermark.md)
 
 - [Word sang PDF hàng loạt](features/word-to-pdf.md)

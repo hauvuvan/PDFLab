@@ -71,6 +71,39 @@ def removal_action(action):
         return jsonify(error=str(exc)), 400
 
 
+@app.get('/pdf-to-images')
+@app.get('/images-to-pdf')
+def image_tools():
+    return render_template('images.html', to_images=request.path == '/pdf-to-images')
+
+
+@app.post('/api/pdf-to-images')
+@app.post('/api/images-to-pdf')
+def convert_images():
+    import image_converter
+    try:
+        with jobs.ENGINE_LOCK:
+            if request.path == '/api/pdf-to-images':
+                pdf = request.files.get('pdf')
+                if not pdf or not pdf.filename.lower().endswith('.pdf'):
+                    raise ValueError('Vui lòng chọn một PDF.')
+                try:
+                    dpi = int(request.form.get('dpi', '150'))
+                except ValueError:
+                    raise ValueError('DPI không hợp lệ.')
+                result = image_converter.pdf_to_images(pdf.read(), request.form.get('format', 'png'), dpi)
+                mime, name = 'application/zip', 'pdf-sang-anh.zip'
+            else:
+                files = request.files.getlist('images')
+                if not 1 <= len(files) <= 100:
+                    raise ValueError('Chọn từ 1 đến 100 ảnh.')
+                result = image_converter.images_to_pdf([(f.filename, f.read()) for f in files], request.form.get('paper', 'a4'))
+                mime, name = 'application/pdf', 'anh-da-ghep.pdf'
+        return send_file(io.BytesIO(result), mimetype=mime, as_attachment=True, download_name=name)
+    except ValueError as exc:
+        return jsonify(error=str(exc)), 400
+
+
 @app.get('/health')
 def health():
     with jobs.LOCK:

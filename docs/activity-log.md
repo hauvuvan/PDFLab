@@ -124,3 +124,11 @@
 - Tài liệu: [giao diện](features/interface.md), [launcher](features/macos-launcher.md), [trạng thái](status.md). Giữ thay đổi công cụ ảnh ngoài task. GitHub: chuẩn bị push commit task lên main/origin, ghi kết quả trong báo cáo cuối; không coi commit local là đã push. VPS không áp dụng, ứng dụng local.
 
 - Kết quả GitHub: push `main` lên `origin/main` thành công, commit `dff51b9` (Normalize dashboard spacing and replace old launcher on update). Log/trạng thái bổ sung trong commit tài liệu tiếp theo; không triển khai lại cho thay đổi log.
+
+## 2026-11-13 17:00 Asia/Ho_Chi_Minh — PDF sang ảnh và ghép ảnh thành PDF
+
+- Yêu cầu: thêm hai công cụ chuyển PDF thành ảnh và ghép ảnh thành PDF.
+- Thay đổi: dashboard 5 công cụ; PNG/JPG và 4 mức DPI, ZIP từng trang; ảnh PNG/JPG/WebP ghép theo thứ tự tùy chỉnh, A4 hoặc tỷ lệ ảnh, EXIF/nền trắng; API kiểm tra dữ liệu và giới hạn pixel. Xử lý đồng bộ, không ghi đè nguồn.
+- QA độc lập `/root/test_images`: 58/58 unittest đạt, gồm 5 test mới kiểm nội dung/màu/thứ tự/DPI/EXIF/alpha, PDF mã hóa/hỏng, giới hạn và HTTP; JS syntax, Python compile (cache /tmp), diff check đạt. Browser local8774: chọn2ảnh→đổi thứ tự→ghép→tải PDF; PDF2trang→chuyển PNG→link ZIP hiện. Trang công cụ HTTP200. Chưa thử drag/drop trực tiếp, lô sát195MB hoặc máy khác; không có tiến trình từng trang/khôi phục sau reload.
+- Tài liệu: [PDF và ảnh](features/pdf-images.md), cập nhật README/tổng quan và trạng thái. Giữ thay đổi sắp xếp nhật ký có sẵn ngoài phạm vi trong working tree.
+- GitHub: chuẩn bị commit phần task trên main và push origin; kết quả push ghi bổ sung sau xác minh. VPS: chưa triển khai, không có đích/cấu hình; đây là kiểm tra local.

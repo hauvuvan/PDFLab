@@ -4,6 +4,8 @@ Cập nhật: 2026-11-13 16:54 Asia/Ho_Chi_Minh. Đọc cùng [nhật ký hoạt
 
 ## Đã làm và có kiểm tra ghi nhận
 
+- PDF sang ảnh và ghép ảnh thành PDF: 58/58 kiểm thử đạt, browser local đã kiểm luồng chính; xem [hướng dẫn](features/pdf-images.md). Task đang chuẩn bị commit/push; trạng thái cuối xem nhật ký.
+
 - Dashboard và watermark ảnh/chữ hàng loạt: xem trước, tùy chỉnh, lưu mẫu, tiến trình, ZIP và log.
 - Word sang PDF hàng loạt qua LibreOffice; giao diện và trạng thái chuyển đổi đã được kiểm tra local.
 - Xoá watermark bằng chọn ảnh hoặc khoanh vùng; hỗ trợ ảnh trong Form XObject. PDF thật 15 trang đã được kiểm tra, giữ nội dung văn bản và ảnh bài tập theo nhật ký.
@@ -12,7 +14,7 @@ Cập nhật: 2026-11-13 16:54 Asia/Ho_Chi_Minh. Đọc cùng [nhật ký hoạt
 
 ## Đang làm / cần xác minh khi tiếp tục
 
-- Working tree có thay đổi chưa commit trong mã/giao diện và các tệp chuyển đổi ảnh (`image_converter.py`, `static/images.*`, `templates/images.html`); chưa nghiệm thu trong task ghi quy tắc này.
+- Hai công cụ PDF/ảnh đã kiểm tra trong task tương ứng; đang hoàn tất commit/push. Các thay đổi task khác cần đối chiếu Git riêng.
 - Đọc diff và xác nhận phạm vi của các task đang chạy trước khi commit; giữ nguyên thay đổi ngoài phạm vi.
 
 ## Chưa làm / giới hạn còn lại

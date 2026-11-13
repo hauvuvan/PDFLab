@@ -20,6 +20,10 @@ Mở trình duyệt tại địa chỉ trên. Nếu cổng đã được dùng, 
 
 Chọn **Word sang PDF**, thêm nhiều file `.doc`/`.docx`, bấm **Chuyển sang PDF**, rồi tải ZIP kết quả và báo cáo. Hỗ trợ tối đa 100 file/195 MB, hiển thị tiến trình và lỗi riêng. Cần LibreOffice trên máy; xem [cài đặt, cách dùng và giới hạn](docs/features/word-to-pdf.md).
 
+## PDF và ảnh
+
+Chọn **PDF sang ảnh** để xuất từng trang thành PNG/JPG trong ZIP; chọn **Ghép ảnh thành PDF** để sắp xếp PNG/JPG/WebP và tạo PDF theo khổ A4 hoặc tỷ lệ ảnh. Không cần cài thêm thư viện. Xem [cách dùng và giới hạn](docs/features/pdf-images.md).
+
 ## Sử dụng
 
 1. Chọn Watermark PDF trên dashboard.
