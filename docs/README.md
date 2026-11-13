@@ -36,3 +36,5 @@ Kho mẫu tồn tại qua khởi động lại tại `data/presets.json`, tách 
 - [Công cụ watermark PDF](features/watermark.md)
 - [Giao diện và bố cục](features/interface.md)
 - [Nhật ký hoạt động](activity-log.md)
+
+- [Mở PDFLabs trên macOS](features/macos-launcher.md)

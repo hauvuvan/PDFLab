@@ -1,4 +1,4 @@
-# Giao diện Paperdesk
+# Giao diện PDFLabs
 
 [Tổng quan](../README.md)
 

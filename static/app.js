@@ -197,6 +197,6 @@ $('#preset-export').onclick=()=>{
 };
 $('#preset-import').onchange=async e=>{
   const file=e.target.files[0];if(!file)return;setBusy(true);
-  try{if(file.size>22*1024*1024)throw new Error('File mẫu tối đa 22 MB.');const data=JSON.parse(await file.text());if(data.format!=='paperdesk-watermark'||data.version!==1)throw new Error('Định dạng mẫu Paperdesk không hợp lệ.');delete data.id;const item=await persistRecipe(data);applyRecipe(item);message('Đã nhập và lưu mẫu “'+item.name+'” trên máy.');}catch(error){message(error.message,true);}finally{e.target.value='';setBusy(false);}
+  try{if(file.size>22*1024*1024)throw new Error('File mẫu tối đa 22 MB.');const data=JSON.parse(await file.text());if(data.format!=='paperdesk-watermark'||data.version!==1)throw new Error('Định dạng mẫu PDFLabs không hợp lệ.');delete data.id;const item=await persistRecipe(data);applyRecipe(item);message('Đã nhập và lưu mẫu “'+item.name+'” trên máy.');}catch(error){message(error.message,true);}finally{e.target.value='';setBusy(false);}
 };
 refreshPresets().catch(error=>message(error.message,true));

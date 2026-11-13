@@ -8,6 +8,7 @@ from werkzeug.exceptions import RequestEntityTooLarge
 from watermark import options, prepare_watermark, process, preview
 import presets
 import jobs
+from runtime_version import SOURCE_VERSION, PROJECT_ID
 import word_converter
 
 app = Flask(__name__)
@@ -72,7 +73,11 @@ def removal_action(action):
 
 @app.get('/health')
 def health():
-    return jsonify(status='ok', version='1.2.0')
+    with jobs.LOCK:
+        active = sum(job['state'] in ('queued', 'running') for job in jobs.JOBS.values())
+    return jsonify(status='ok', version='1.2.0', app='PDFLabs', source_version=SOURCE_VERSION,
+                   project_id=PROJECT_ID, pid=os.getpid(), active_jobs=active,
+                   engine_busy=jobs.ENGINE_LOCK.locked())
 
 
 def inputs():

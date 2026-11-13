@@ -88,3 +88,13 @@
 - Browser thực tế localhost8773: chọn DOCX→chuyển1/1 thành công→PDF1trang, nút tải ZIP và log; chuyển dashboard rồi vào Word giữ kết quả và hash đúng. Đo DOM khoảng cách khối24px, padding24px, heading→layout24px, title→drop20px. Ảnh kiểm tra /tmp/word-ui-spacing.png. Chưa thử mạng chậm cấp hệ điều hành/lô195MB. Đây là kiểm tra local, không phải VPS.
 - Tài liệu: cập nhật [Word sang PDF](features/word-to-pdf.md). Giữ riêng thay đổi tên thương hiệu, launcher và tài liệu task khác đang làm song song.
 - GitHub: commit local phần UI Word; chưa push vì không có remote. VPS: chưa triển khai, chưa có đích/cấu hình; bản kiểm tra local tại http://127.0.0.1:8773/#word.
+
+## 2026-11-13 16:51 Asia/Ho_Chi_Minh — PDFLabs.app và mở phiên bản mới nhất
+
+- Yêu cầu: đổi tên PDFLabs, tạo ứng dụng Applications/lối tắt Desktop; mỗi lần mở dùng bản mới nhất trên máy.
+- Thay đổi: tên hiển thị PDFLabs, native macOS launcher, kiểm tra health/dấu mã nguồn/đúng dự án/PID, khởi động phiên mới nếu mã thay đổi và engine/job rảnh. Không tự tải GitHub; giữ khóa localStorage và định dạng preset cũ. Thiếu môi trường hoặc cổng bận báo lỗi. Chi tiết: [khởi động macOS](features/macos-launcher.md).
+- QA độc lập `/root/launcher_qa`: 8/8 launcher mock đạt; sau sửa native bundle xác minh Mach-O arm64/plist/wrapper; thêm 6/6 freshness mock đạt (bản hiện tại/bản cũ/busy/legacy/hash/health). JS syntax, py_compile (cache /tmp), plutil, zsh syntax, diff check đạt. Lỗi ban đầu shell bundle bị LaunchServices từ chối đã sửa sang executable native qua clang.
+- Cài local: /Applications/PDFLabs.app, /Users/ithacuco/Desktop/PDFLabs.app là symlink; đã thử mở qua ứng dụng, Safari hiện title/sidebar/footer PDFLabs, không có Terminal. Bộ mở phụ thuộc đường dẫn dự án/.venv, chưa ký để phân phối, chưa icon riêng.
+- SAU cài/khởi động lại 2026-11-13 16:51 Asia/Ho_Chi_Minh: môi trường http://127.0.0.1:8765, health HTTP200/version1.2.0; QA kiểm tra route home/removal/presets200 và2 mẫu còn nguyên, launcher.log không traceback/error. Agent chính mở lại khi mã nguồn thay đổi: PID44801→45093, source_version khớp mã trên đĩa và project_id đúng; Safari thể hiện các tính năng mới nhất đang có trên máy. Các phiên cũ trước migration đã kiểm tra0 job active rồi mới dừng đúng PID.
+- Giới hạn: check busy/TERM chưa nguyên tử, tránh gửi tác vụ từ tab khác đúng lúc cập nhật; chưa thử trên máy Mac khác. Không dùng chứng nhận VPS cho kiểm tra local.
+- GitHub: commit local phạm vi launcher/tên/version; chưa push do chưa có remote. VPS: không áp dụng, ứng dụng local. Các tính năng khác đang sửa đồng thời được giữ nguyên.
