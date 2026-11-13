@@ -19,10 +19,12 @@ Mở trình duyệt tại địa chỉ trên. Nếu cổng đã được dùng, 
 ## Sử dụng
 
 1. Chọn Watermark PDF trên dashboard.
-2. Thêm một hoặc nhiều PDF, chọn ảnh PNG/JPG/WebP.
-3. Chỉnh vị trí, kích thước tối đa, độ hiển thị và liên kết (để trống để không gắn link).
+2. Thêm một hoặc nhiều PDF, chọn ảnh PNG/JPG/WebP hoặc watermark chữ tiếng Việt.
+3. Chỉnh màu, độ trong suốt, góc, 9 vị trí, tỷ lệ %, lặp phủ trang, phạm vi trang và liên kết (để trống để không gắn link).
 4. Chọn file và số trang rồi bấm **Xem**. Sau khi thay cấu hình cần bấm Xem lại.
 5. Bấm **Xử lý & tải ZIP**. Có thể chạy một file hoặc cả lô; giao diện báo số file hoàn tất và trang đang xử lý. ZIP chứa PDF thành công, `bao-cao.json` và `tien-trinh.jsonl`. Có nút tải lại ZIP và tải log riêng kể cả khi toàn bộ file lỗi. Log/kết quả nằm ở `output/jobs/`, dọn các lượt quá 24 giờ khi tạo lượt mới. Tải lại trang có thể nối lại tiến trình khi máy chủ vẫn chạy.
+
+Có thể lưu mẫu kèm logo, áp dụng lại, cập nhật tên/cấu hình và nhập/xuất JSON. Nút “Chữ nghiêng lặp như ảnh mẫu” đặt nhanh kiểu chữ xám nghiêng so le. [Hướng dẫn chi tiết từng tùy chọn và mẫu](docs/features/watermark.md).
 
 File gốc không bị ghi đè. Mặc định theo script Colab: rộng tối đa 50%, cao tối đa 10%, chân trang, cách mép dưới 20 pt, liên kết và tiền tố tailieuonthi.org. Ảnh luôn giữ tỷ lệ và căn giữa trong vùng đã chọn.
 

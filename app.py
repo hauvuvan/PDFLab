@@ -5,18 +5,20 @@ import zipfile
 from pathlib import Path
 from flask import Flask, jsonify, render_template, request, send_file
 from werkzeug.exceptions import RequestEntityTooLarge
-from watermark import options, image_bytes, process, preview
+from watermark import options, prepare_watermark, process, preview
+import presets
 import jobs
 
 app = Flask(__name__)
-app.config.update(MAX_CONTENT_LENGTH=200 * 1024 * 1024, MAX_FORM_MEMORY_SIZE=1024 * 1024)
+app.config.update(MAX_CONTENT_LENGTH=200 * 1024 * 1024, MAX_FORM_MEMORY_SIZE=1024 * 1024,
+                  PRESETS_PATH=Path(__file__).parent / 'data' / 'presets.json')
 
 
 @app.before_request
 def local_only():
     if request.host.split(':')[0] not in ('127.0.0.1', 'localhost'):
         return jsonify(error='Công cụ chỉ phục vụ trên máy này.'), 403
-    if request.method == 'POST':
+    if request.method in ('POST', 'DELETE'):
         origin = request.headers.get('Origin')
         if origin and origin != request.host_url.rstrip('/'):
             return jsonify(error='Yêu cầu không hợp lệ.'), 403
@@ -37,19 +39,58 @@ def index():
 
 @app.get('/health')
 def health():
-    return jsonify(status='ok', version='1.0.0')
+    return jsonify(status='ok', version='1.1.0')
 
 
 def inputs():
     opts = options(request.form)
-    image = request.files.get('watermark')
-    if not image or not image.filename:
-        raise ValueError('Vui lòng chọn ảnh watermark.')
-    raw = image.read(15 * 1024 * 1024 + 1)
-    if len(raw) > 15 * 1024 * 1024:
-        raise ValueError('Ảnh watermark tối đa 15 MB.')
-    data, size = image_bytes(raw, opts['opacity'])
+    raw = b''
+    if opts['kind'] == 'image':
+        image = request.files.get('watermark')
+        if not image or not image.filename:
+            raise ValueError('Vui lòng chọn ảnh watermark.')
+        raw = image.read(15 * 1024 * 1024 + 1)
+        if len(raw) > 15 * 1024 * 1024:
+            raise ValueError('Ảnh watermark tối đa 15 MB.')
+    data, size = prepare_watermark(raw, opts)
     return opts, data, size
+
+
+@app.get('/api/presets')
+def list_presets():
+    try:
+        return jsonify(presets=presets.read(Path(app.config['PRESETS_PATH'])))
+    except ValueError as e:
+        return jsonify(error=str(e)), 400
+
+
+@app.post('/api/presets')
+def save_preset():
+    try:
+        data = request.get_json(silent=True)
+        item = presets.upsert(Path(app.config['PRESETS_PATH']), data)
+        return jsonify(preset=item)
+    except (ValueError, TypeError) as e:
+        return jsonify(error=str(e)), 400
+    except OSError:
+        return jsonify(error='Không ghi được kho mẫu trên máy. Kiểm tra quyền thư mục data.'), 500
+
+
+@app.delete('/api/presets/<preset_id>')
+def delete_preset(preset_id):
+    try:
+        path = Path(app.config['PRESETS_PATH'])
+        with presets.LOCK:
+            current = presets.read(path)
+            remaining = [row for row in current if row['id'] != preset_id]
+            if len(current) == len(remaining):
+                return jsonify(error='Không tìm thấy mẫu.'), 404
+            presets.save(path, remaining)
+        return jsonify(ok=True)
+    except ValueError as e:
+        return jsonify(error=str(e)), 400
+    except OSError:
+        return jsonify(error='Không ghi được kho mẫu.'), 500
 
 
 @app.post('/api/preview')

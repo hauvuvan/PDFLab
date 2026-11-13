@@ -4,38 +4,74 @@
 
 ## Mục đích và luồng
 
-Chuyển script Colab do người dùng cung cấp thành công cụ chạy cục bộ. Chọn PDF → chọn ảnh → cấu hình → xem trước một trang → xuất ZIP chứa các PDF thành công và báo cáo. Preview và xuất dùng chung hàm chèn watermark để tránh lệch kết quả.
+Công cụ watermark ảnh hoặc chữ trên PDF đơn/lô. Chọn PDF → chọn loại watermark → cấu hình hoặc áp dụng mẫu → chọn trang để xem trước → xử lý và tải ZIP. Preview và xuất dùng chung engine, không raster hóa nội dung PDF gốc.
 
-## Hành vi
+## Nội dung watermark
 
-- Tất cả các trang nhận cùng ảnh, giữ tỷ lệ. Mặc định rộng tối đa 50% trang, cao tối đa 10%, chân trang, cách mép 20 pt.
-- Chọn đầu trang, giữa trang hoặc chân trang; căn giữa theo chiều ngang. Kích thước thực tế bị giới hạn bởi cả hai tỷ lệ và khoảng lề.
-- Độ hiển thị 1–100% nhân với alpha sẵn có của ảnh. Đây không phải công cụ xóa nền; JPG vẫn có nền ảnh.
-- Chèn ảnh phía trên nội dung, link HTTP/HTTPS nằm đúng vùng ảnh. Có thể bỏ link. Trang xoay dùng biến đổi tọa độ để vị trí theo trang nhìn thấy.
-- Tiền tố mặc định `[tailieuonthi.org]`, có thể sửa hoặc để trống; ký tự đường dẫn và điều khiển bị thay thế. File trùng tên thêm số `(2)`, `(3)`… không ghi đè nhau.
-- PDF hỏng, có mật khẩu hoặc có cờ chữ ký số bị từ chối từng file. Các file khác vẫn tiếp tục. Không có file thành công thì trả lỗi, không tải ZIP rỗng.
-- Không chỉnh sửa nguồn, không xóa watermark cũ. Chạy lại lên kết quả sẽ thêm watermark lần nữa.
+- **Ảnh**: PNG, JPG, WebP. Giữ màu gốc hoặc bật đổi thành một màu; alpha giữ nguyên. Không tự xóa nền: JPG nền trắng vẫn có nền trắng nếu không dùng ảnh trong suốt.
+- **Chữ**: tối đa 300 ký tự, 5 dòng, hỗ trợ tiếng Việt, xuống dòng và căn giữa. Chọn Arial, Times New Roman, Courier New và in đậm.
+- Màu RGB qua bộ chọn màu. Độ trong suốt UI 0% = rõ hoàn toàn, 100% = ẩn hoàn toàn. API dùng `opacity` ngược lại: 100 = rõ, 0 = ẩn. Với ảnh, độ hiển thị nhân alpha gốc; ẩn hoàn toàn không chèn ảnh hoặc link vô hình.
+- Chữ được tạo thành ảnh PNG trong suốt chất lượng cao (font cơ sở 160px, chiều rộng tối đa 2400px), nên watermark chữ không phải văn bản có thể chọn/tìm kiếm. Nội dung gốc vẫn là PDF, không chuyển cả trang thành ảnh. Ảnh xoay thu nhỏ tối đa 2400×2400 trước khi xoay để kiểm soát bộ nhớ. Đây là giới hạn thực tế nếu phóng rất lớn hoặc in khổ lớn.
+- Font lấy từ macOS, không sao chép font vào repo; Linux fallback DejaVu Sans nếu đã cài. Chưa có bộ cài Windows; thiếu font sẽ báo lỗi thay vì thay chữ thành ô vuông. Trong fallback Linux, ba lựa chọn kiểu chữ cùng dùng DejaVu Sans.
+
+## Vị trí, góc và kích thước
+
+| Tùy chọn | Hành vi |
+|---|---|
+| Một watermark/trang | Chọn 9 điểm neo: trên/giữa/dưới × trái/giữa/phải |
+| Lặp so le | Phủ toàn trang, hàng xen kẽ lệch nửa bước ngang; ảnh ở mép có thể bị cắt như tham khảo |
+| Ngang/dọc tối đa | Rộng 5–95% trang, cao 1–80% trang; giữ tỷ lệ, khung bao **sau xoay** phải nằm trong cả hai giới hạn |
+| Góc nghiêng | -180° đến 180°; góc dương nghiêng lên về bên phải, góc âm theo chiều ngược lại |
+| Dịch ngang/dọc | -45% đến +45% kích thước trang; dấu âm sang trái/lên trên; watermark đơn được giữ trong trang, chế độ lặp dịch pha của lưới |
+| Lề | 0–150 pt (1 pt = 1/72 inch), tự giới hạn còn 20% mỗi chiều trên trang nhỏ; dùng với watermark đơn và giới hạn kích thước |
+| Khoảng trống lặp | 5–100% mỗi chiều trang, cộng thêm vào kích thước watermark để tạo bước lặp; tăng số này làm thưa hơn |
+| Lớp hiển thị | Trên hoặc dưới nội dung; lớp dưới có thể bị trang scan/nền trắng che hoàn toàn |
+
+Tọa độ tính theo hướng hiển thị thực tế, kể cả trang xoay và crop. Watermark đơn không bị xoay theo hướng trang một lần nữa. Chế độ lặp không dùng điểm neo; các nút vị trí bị khóa. Link HTTP/HTTPS là vùng chữ nhật bao watermark, giới hạn trong trang; có thể bỏ link. Với ảnh nghiêng vùng link bao gồm cả góc trong suốt của khung bao.
+
+**Cấu hình nhanh giống ảnh tham khảo:** Chữ, nội dung `tailieuchuan.vn`, in đậm, màu `#808080`, trong suốt 65% (hiển thị 35%), góc +30°, rộng tối đa 38%, cao tối đa 35%, lặp so le, khoảng ngang 18%, dọc 12%, trên nội dung, không link. Nút “Chữ nghiêng lặp như ảnh mẫu” đặt các thông số này và giữ nội dung chữ mặc định; có thể sửa ngay sau đó. Mức độ giống còn phụ thuộc tỷ lệ trang và độ dài chữ.
+
+**Logo chân trang:** ảnh, rộng 50%, cao 10%, giữa chân trang, lề 20pt, không nghiêng, hiển thị 100%, liên kết `https://tailieuonthi.org/`, tiền tố `[tailieuonthi.org]`, như script Colab ban đầu.
+
+## Trang áp dụng và file đầu ra
+
+Chọn tất cả, lẻ, chẵn hoặc khoảng tùy chọn `1-3, 5, 8-10`. Đánh số theo thứ tự PDF từ 1, không theo số trang in trên tài liệu. Khoảng vượt số trang làm lỗi riêng file đó, không âm thầm bỏ qua. Tài liệu 1 trang chọn chẵn bị báo không có trang phù hợp. Preview trang ngoài phạm vi vẫn hiển thị trang gốc để thấy hành vi thực tế.
+
+Tiền tố tên file sửa được hoặc để trống; ký tự đường dẫn/điều khiển được thay thế, tên trùng thêm `(2)`, `(3)`… Không ghi đè nguồn, không xóa watermark cũ. Chạy lên file đã xử lý sẽ chèn thêm lần nữa. PDF hỏng, khóa mật khẩu hoặc có cờ chữ ký số bị báo lỗi riêng, các file khác vẫn xử lý. ZIP chỉ gồm file thành công, báo cáo/log theo phần dưới.
+
+## Lưu mẫu, cập nhật và sao lưu
+
+1. Chỉnh watermark, nhập tên mẫu rồi bấm **Lưu mẫu mới**. Mẫu ảnh lưu cả logo; mẫu chữ lưu nội dung, kiểu chữ và toàn bộ thiết lập xuất.
+2. Chọn một mẫu và bấm **Áp dụng**; PDF nguồn không thay đổi và không nằm trong mẫu. Bấm **Xem** để kiểm tra lại.
+3. Sửa tên/cấu hình rồi **Cập nhật mẫu** để ghi lại mẫu đang chọn. **Lưu mẫu mới** tạo id khác, kể cả khi trùng tên; nên đặt tên phân biệt.
+4. **Xuất mẫu JSON** xuất bản đã lưu đang chọn (không phải cấu hình chưa lưu). **Nhập mẫu JSON** kiểm tra rồi lưu thành mẫu mới, tự áp dụng.
+5. **Xóa mẫu** có xác nhận. Nên xuất JSON trước nếu muốn khôi phục; không có thùng rác mẫu.
+
+Kho tại `data/presets.json`, tối đa 30 mẫu / 64 MB, không đưa vào Git. Ghi file nguyên tử với quyền 0600 và khóa khi cập nhật. JSON có chứa nội dung chữ/logo/link nên xem xét trước khi chia sẻ. Lỗi JSON/cấu trúc kho được báo và không tự ghi đè. Sao lưu file kho trước khi sửa tay. Dừng app rồi phục hồi bản sao đúng vị trí; hoặc nhập JSON từng mẫu trong giao diện. Xóa mẫu không ảnh hưởng PDF đã xuất. Mẫu chữ giữ lựa chọn font chứ không nhúng font gốc vào JSON, nên chuyển máy cần có font tương ứng.
 
 ## Giới hạn
 
-100 PDF/lượt; HTTP request tối đa 200 MB; giao diện giới hạn tổng PDF 195 MB và ảnh 15 MB, tổng request vẫn phải nằm trong 200 MB. Ảnh tối đa 25 triệu pixel. Xử lý trong bộ nhớ, nên lô PDF có nhiều trang/ảnh lớn có thể cần chia nhỏ hơn. Preview chỉ render trang được chọn, không phải toàn bộ tài liệu.
+100 PDF/lượt, request tối đa 200 MB, giao diện giới hạn PDF 195 MB, ảnh tối đa 15 MB / 25 triệu điểm ảnh; tổng request vẫn phải dưới 200 MB. Lô lớn/nhiều trang có thể cần chia nhỏ do bộ nhớ. Không hỗ trợ Word/Excel, HEIC, mở khóa PDF, nhiều lớp watermark khác nhau trong một lượt, chỉnh trực tiếp bằng kéo trên preview hoặc tài khoản nhiều người dùng. Mỗi lượt dùng một ảnh hoặc một nội dung chữ. Chưa kiểm thử trên tài liệu thật của người dùng hoặc khối lượng sát giới hạn.
 
-Không hỗ trợ Word, Excel, ảnh HEIC, mật khẩu mở PDF, watermark chữ, chọn khoảng trang, hàng đợi, lưu hồ sơ cấu hình hoặc nhiều người dùng. PDF số hóa và PDF scan đều có thể thêm ảnh. Lưu PDF có thể thay đổi cấu trúc nội bộ; cần tự đối chiếu với tài liệu quan trọng hoặc có cấu trúc đặc biệt. PyMuPDF dùng AGPL hoặc giấy phép thương mại; cần rà soát giấy phép nếu đóng gói/phân phối sản phẩm thương mại.
+PyMuPDF có giấy phép AGPL/thương mại; cần rà soát khi phân phối. [Tài liệu kỹ thuật PyMuPDF](https://pymupdf.readthedocs.io/en/latest/page.html) giải thích quy ước tọa độ và chèn ảnh; script gốc chỉ được đọc để tham khảo, không thực thi.
 
 ## API cục bộ
 
-- `GET /`: dashboard.
-- `GET /health`: trạng thái và phiên bản.
-- `POST /api/preview`: multipart `pdf`, `watermark`, `page` (1-based) và cấu hình; trả PNG, header `X-Page-Count`.
-- `POST /api/process`: multipart `pdfs` (lặp), `watermark` và cấu hình; trả ZIP kèm `bao-cao.json`. Header tổng số thành công/thất bại; chi tiết ngắn qua `X-Reports`, lô dài xem báo cáo trong ZIP.
+`GET /` dashboard; `GET /health` phiên bản; `POST /api/preview` multipart gồm `pdf`, `page` (1-based), `watermark` (chỉ bắt buộc khi kind=image) và cấu hình, trả PNG/`X-Page-Count`. `POST /api/process` đồng bộ trả ZIP, count header và báo cáo tóm tắt dưới 6000 ký tự; lô dài xem báo cáo trong ZIP. Giao diện hiện dùng API jobs ở phần dưới.
 
-Cấu hình: `position=top|center|bottom`, `width=5..95`, `height=1..80`, `opacity=1..100`, `margin=0..150` (pt), `link`, `prefix`. Các giá trị mặc định như trên. Lỗi đầu vào trả JSON 400; quá dung lượng trả JSON 413. Chỉ nhận Host localhost/127.0.0.1 và Origin cùng nguồn nếu có.
+Cấu hình:
+
+- `kind=image|text`, `text`, `font=sans|serif|mono`, `bold=true|false`, `color=#RRGGBB`, `tint=true|false`.
+- `position=top-left|top|top-right|center-left|center|center-right|bottom-left|bottom|bottom-right`.
+- `width=5..95`, `height=1..80`, `opacity=0..100`, `angle=-180..180`, `margin=0..150`, `offset_x/y=-45..45`, `spacing_x/y=5..100`.
+- `layout=single|tile`, `layer=above|below`, `pages=all|odd|even|custom`, `page_range`, `link`, `prefix`.
+- `GET /api/presets` → `{presets:[...]}`; `POST /api/presets` JSON `{name, options, image:base64, id?:...}` tạo/cập nhật; `DELETE /api/presets/<id>` xóa. `image` là base64 ảnh gốc không có data-URL prefix, không bắt buộc cho text. File trao đổi JSON UI thêm `format=paperdesk-watermark, version=1`.
+
+Lỗi đầu vào JSON400, dung lượng413. Host localhost/127.0.0.1, Origin cùng nguồn nếu có. Không mở API ra Internet.
 
 ## Kiểm tra
 
-Chạy lệnh unittest ở [README](../../README.md). Phạm vi: batch/ZIP/báo cáo, bảo toàn văn bản và số trang, link, file trùng tên, trang xoay/crop, alpha, preview và lỗi đầu vào. Kiểm tra thủ công thêm bằng file thực tế của người dùng trước khi dùng số lượng lớn; chưa có file PDF/logo thật được cung cấp trong task ban đầu.
-
-Nguồn kỹ thuật: [PyMuPDF Page](https://pymupdf.readthedocs.io/en/latest/page.html), đặc biệt quy ước tọa độ chèn ảnh trên trang xoay. Script mẫu được đọc tại `/Users/ithacuco/Desktop/them_watermark_tu_dong.py`; không chỉnh sửa script nguồn.
+Lệnh unittest ở [README](../../README.md). Test nâng cao xác minh render/pixel cho chữ, màu, alpha, góc, vị trí, tile/offset, phạm vi trang/lớp và vòng đời mẫu có logo; cộng regression PDF xoay/crop/batch/lỗi. Browser kiểm tra riêng chọn chữ tiếng Việt, xem trước, lưu mẫu qua reload, nhập/xuất JSON, cập nhật tên và tải ZIP. Chưa xác minh Windows/Linux, chữ ký số thật, kho64MB và lô200MB.
 
 ## Tiến trình và log cho xử lý đơn/lô
 

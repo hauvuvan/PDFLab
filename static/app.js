@@ -1,5 +1,5 @@
 const $ = s => document.querySelector(s);
-let files = [], logoURL, previewURL, downloadURL, busy = false, revision = 0;
+let files = [], logoURL, previewURL, downloadURL, busy = false, revision = 0, savedLogo = null, presets = [];
 const form = $('#watermark-form');
 function navigate(editor) {
   $('#dashboard').hidden = editor; $('#editor').hidden = !editor;
@@ -39,25 +39,52 @@ const drop=$('#dropzone');
 ['dragleave','drop'].forEach(event=>drop.addEventListener(event,e=>{e.preventDefault();drop.classList.remove('drag');}));
 drop.addEventListener('drop',e=>addFiles(e.dataTransfer.files));
 $('#watermark').onchange=e=>{
-  const file=e.target.files[0];stale();
+  const file=e.target.files[0];savedLogo=null;stale();
   if(!file)return;
   if(file.size>15*1024*1024){e.target.value='';return message('Ảnh watermark tối đa 15 MB.',true);}
   if(logoURL)URL.revokeObjectURL(logoURL);logoURL=URL.createObjectURL(file);
   $('#logo-thumb').src=logoURL;$('#logo-thumb').hidden=false;$('#logo-placeholder').hidden=true;$('#logo-name').textContent=file.name;
 };
-function updateRanges(){for(const name of ['width','opacity'])$('#'+name+'-value').textContent=form.elements[name].value+'%';}
-form.addEventListener('input',()=>{updateRanges();stale();});
+const defaults={kind:'image',position:'bottom',margin:20,width:50,height:10,opacity:100,angle:0,offset_x:0,offset_y:0,spacing_x:20,spacing_y:15,layout:'single',layer:'above',font:'sans',bold:'false',color:'#808080',tint:'false',text:'tailieuchuan.vn',pages:'all',page_range:'',prefix:'[tailieuonthi.org]',link:'https://tailieuonthi.org/'};
+function updateRanges(){
+  for(const name of ['width','height'])$('#'+name+'-value').textContent=form.elements[name].value+'%';
+  $('#angle-value').textContent=form.elements.angle.value+'°';
+  $('#transparency-value').textContent=(100-Number(form.elements.opacity.value))+'%';
+}
+function syncUI(){
+  const text=form.elements.kind.value==='text';
+  $('#text-settings').hidden=!text;$('#image-settings').hidden=text;
+  form.elements.text.required=text;
+  $('#tile-settings').hidden=form.elements.layout.value!=='tile';
+  $('#tile-settings').querySelectorAll('input').forEach(field=>field.disabled=$('#tile-settings').hidden);
+  $('#page-range-label').hidden=form.elements.pages.value!=='custom';
+  form.elements.page_range.required=form.elements.pages.value==='custom';
+  form.elements.page_range.disabled=form.elements.pages.value!=='custom';
+  document.querySelectorAll('[data-position]').forEach(button=>{button.setAttribute('aria-pressed',String(button.dataset.position===form.elements.position.value));button.disabled=form.elements.layout.value==='tile';});
+  $('#transparency').value=100-Number(form.elements.opacity.value);
+  $('#color-hint').textContent=text ? 'Màu của chữ watermark.' : $('#tint-toggle').checked ? 'Đổi tất cả điểm ảnh có màu thành màu này, giữ alpha.' : 'Ảnh đang giữ màu gốc. Bật “Đổi ảnh thành một màu” để áp dụng.';
+  updateRanges();
+}
+function setOptions(values){for(const [name,value] of Object.entries(values)){const field=form.elements[name];if(field)field.value=String(value);}$('#tint-toggle').checked=values.tint==='true';syncUI();stale();}
+form.addEventListener('input',e=>{if(e.target.id==='transparency')form.elements.opacity.value=100-Number(e.target.value);syncUI();stale();});
+form.addEventListener('change',syncUI);
 $('#preview-file').onchange=stale;$('#page-number').oninput=stale;
-$('#reset').onclick=()=>{for(const [name,value] of Object.entries({position:'bottom',margin:20,width:50,height:10,opacity:100,prefix:'[tailieuonthi.org]',link:'https://tailieuonthi.org/'}))form.elements[name].value=value;updateRanges();stale();};
+document.querySelectorAll('[data-position]').forEach(button=>button.onclick=()=>{form.elements.position.value=button.dataset.position;syncUI();stale();});
+$('#reset').onclick=()=>setOptions(defaults);
+$('#recipe-diagonal').onclick=()=>setOptions({...defaults,kind:'text',layout:'tile',bold:'true',position:'center',angle:30,opacity:35,width:38,height:35,spacing_x:18,spacing_y:12,link:'',prefix:'[watermark]'});
+$('#recipe-footer').onclick=()=>setOptions(defaults);
+function currentLogo(){return $('#watermark').files[0]||savedLogo;}
+function currentOptions(){const data=new FormData(form);const values={};for(const key of Object.keys(defaults))values[key]=data.get(key)??defaults[key];values.tint=String($('#tint-toggle').checked);return values;}
+syncUI();
 function payload(preview){
   if(!form.reportValidity())return null;
   if(!files.length){message('Vui lòng thêm ít nhất một PDF.',true);return null;}
-  const logo=$('#watermark').files[0];if(!logo){message('Vui lòng chọn ảnh watermark.',true);return null;}
-  const data=new FormData(form);data.append('watermark',logo);
+  const logo=currentLogo();if(form.elements.kind.value==='image'&&!logo){message('Vui lòng chọn ảnh watermark.',true);return null;}
+  const data=new FormData(form);data.set('tint',String($('#tint-toggle').checked));if(logo)data.append('watermark',logo,'watermark.png');
   if(preview){data.append('pdf',files[Number($('#preview-file').value)||0]);data.append('page',$('#page-number').value);}else files.forEach(file=>data.append('pdfs',file));
   return data;
 }
-function setBusy(value){busy=value;$('#process-button').disabled=value;$('#preview-button').disabled=value;}
+function setBusy(value){busy=value;$('#process-button').disabled=value;$('#preview-button').disabled=value;document.querySelectorAll('.preset-actions button,#preset-apply,#preset-import').forEach(el=>el.disabled=value);}
 async function errorBody(response){try{return await response.json();}catch{return {error:'Không đọc được phản hồi. Hãy thử chia nhỏ số file hoặc khởi động lại công cụ.'};}}
 $('#preview-button').onclick=async()=>{
   if(busy)return;const data=payload(true);if(!data)return;setBusy(true);const current=revision;message('Đang tạo bản xem trước…');
@@ -112,3 +139,47 @@ form.onsubmit=async e=>{
 };
 const savedJob=localStorage.getItem('paperdesk-job');
 if(savedJob && /^[a-f0-9]{32}$/.test(savedJob)){navigate(true);trackJob(savedJob);}
+
+// Presets live in the local application folder and include only settings + logo.
+async function refreshPresets(selected=''){
+  const response=await fetch('/api/presets');const body=await response.json();if(!response.ok)throw new Error(body.error);
+  presets=body.presets;const select=$('#preset-select');select.replaceChildren(new Option('Chọn mẫu đã lưu…',''));
+  presets.forEach(p=>select.append(new Option(p.name,p.id)));select.value=selected;
+}
+function selectedPreset(){return presets.find(p=>p.id===$('#preset-select').value);}
+function fileBase64(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result.split(',')[1]);reader.onerror=()=>reject(new Error('Không đọc được logo.'));reader.readAsDataURL(file);});}
+async function recipeData(update=false){
+  const name=$('#preset-name').value.trim();if(!name)throw new Error('Nhập tên mẫu trước khi lưu.');
+  const opts=currentOptions();let image='';
+  if(opts.kind==='image'){const logo=currentLogo();if(!logo)throw new Error('Chọn ảnh để lưu cùng mẫu.');image=await fileBase64(logo);}
+  const data={name,options:opts,image};if(update){const item=selectedPreset();if(!item)throw new Error('Chọn mẫu cần cập nhật.');data.id=item.id;}return data;
+}
+async function persistRecipe(data){const response=await fetch('/api/presets',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});const body=await response.json();if(!response.ok)throw new Error(body.error);await refreshPresets(body.preset.id);$('#preset-name').value=body.preset.name;return body.preset;}
+for(const [id,update] of [['preset-save',false],['preset-update',true]])$('#'+id).onclick=async()=>{
+  if(busy)return;try{const data=await recipeData(update);setBusy(true);await persistRecipe(data);message(update?'Đã cập nhật mẫu trên máy.':'Đã lưu mẫu mới trên máy, gồm cấu hình và logo nếu có.');}catch(error){message(error.message,true);}finally{setBusy(false);}
+};
+$('#preset-select').onchange=()=>{const item=selectedPreset();$('#preset-name').value=item?item.name:'';};
+function applyRecipe(item){
+  setOptions(item.options);$('#watermark').value='';savedLogo=null;
+  if(logoURL)URL.revokeObjectURL(logoURL);
+  if(item.options.kind==='image'){
+    const bytes=Uint8Array.from(atob(item.image),c=>c.charCodeAt(0));savedLogo=new Blob([bytes],{type:'image/png'});logoURL=URL.createObjectURL(savedLogo);$('#logo-thumb').src=logoURL;$('#logo-thumb').hidden=false;$('#logo-placeholder').hidden=true;$('#logo-name').textContent='Logo từ mẫu: '+item.name;
+  }else{$('#logo-thumb').hidden=true;$('#logo-placeholder').hidden=false;$('#logo-name').textContent='Chọn logo hoặc hình ảnh';}
+  $('#preset-name').value=item.name;message('Đã áp dụng mẫu “'+item.name+'”. Bấm Xem để kiểm tra trên PDF.');
+}
+$('#preset-apply').onclick=()=>{const item=selectedPreset();if(!item)return message('Chọn mẫu trước khi áp dụng.',true);applyRecipe(item);};
+$('#preset-delete').onclick=async()=>{
+  const item=selectedPreset();if(!item)return message('Chọn mẫu cần xóa.',true);
+  if(!confirm('Xóa mẫu “'+item.name+'” khỏi máy? Bạn có thể xuất JSON để sao lưu trước.'))return;
+  setBusy(true);try{const response=await fetch('/api/presets/'+encodeURIComponent(item.id),{method:'DELETE'});const body=await response.json();if(!response.ok)throw new Error(body.error);await refreshPresets();$('#preset-name').value='';message('Đã xóa mẫu.');}catch(error){message(error.message,true);}finally{setBusy(false);}
+};
+$('#preset-export').onclick=()=>{
+  const item=selectedPreset();if(!item)return message('Chọn mẫu đã lưu để xuất JSON.',true);
+  const data={format:'paperdesk-watermark',version:1,name:item.name,options:item.options,image:item.image};
+  const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));const link=document.createElement('a');link.href=url;link.download='paperdesk-watermark.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),60000);message('Đã xuất bản sao mẫu JSON. File này có chứa logo và nội dung chữ.');
+};
+$('#preset-import').onchange=async e=>{
+  const file=e.target.files[0];if(!file)return;setBusy(true);
+  try{if(file.size>22*1024*1024)throw new Error('File mẫu tối đa 22 MB.');const data=JSON.parse(await file.text());if(data.format!=='paperdesk-watermark'||data.version!==1)throw new Error('Định dạng mẫu Paperdesk không hợp lệ.');delete data.id;const item=await persistRecipe(data);applyRecipe(item);message('Đã nhập và lưu mẫu “'+item.name+'” trên máy.');}catch(error){message(error.message,true);}finally{e.target.value='';setBusy(false);}
+};
+refreshPresets().catch(error=>message(error.message,true));
