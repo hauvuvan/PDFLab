@@ -44,17 +44,34 @@ def snapshot(key):
         return json.loads(json.dumps(job)) if job else None
 
 
-def submit(files, image, size, opts, converter=None):
+def submit(files, image, size, opts, converter=None, uploads=False):
     cleanup()
     key = uuid.uuid4().hex
     folder = ROOT / key
     folder.mkdir()
     job = dict(id=key, state='queued', total=len(files), completed=0, page=0, pages=0,
                current='', reports=[], success=0, failed=0, error=None, tool='word' if converter else 'watermark')
-    event(job, 'queued', total=len(files))
-    with LOCK:
-        JOBS[key] = job
-    EXECUTOR.submit(run, job, files, image, size, opts, converter)
+    try:
+        if uploads:
+            inputs = folder / 'inputs'
+            inputs.mkdir()
+            staged = []
+            for index, upload in enumerate(files):
+                name = (upload.filename or 'document.pdf').replace('\\', '/').split('/')[-1]
+                name = ''.join(c for c in name if ord(c) >= 32)[:180] or 'document.pdf'
+                path = inputs / str(index)
+                upload.save(path)
+                staged.append((name, path))
+            files = staged
+        event(job, 'queued', total=len(files))
+        with LOCK:
+            JOBS[key] = job
+        EXECUTOR.submit(run, job, files, image, size, opts, converter)
+    except Exception:
+        with LOCK:
+            JOBS.pop(key, None)
+        shutil.rmtree(folder, ignore_errors=True)
+        raise
     return key
 
 
@@ -66,7 +83,8 @@ def run(job, files, image, size, opts, converter=None):
         event(job, 'started')
         used = set()
         with zipfile.ZipFile(folder / 'result.zip', 'w', zipfile.ZIP_DEFLATED) as archive:
-            for name, raw in files:
+            for name, source in files:
+                raw = result = None
                 with LOCK:
                     job.update(current=name, page=0, pages=0)
                 event(job, 'file_started', file=name)
@@ -75,6 +93,7 @@ def run(job, files, image, size, opts, converter=None):
                         job.update(page=page, pages=pages)
                     event(job, 'page', file=name, page=page, pages=pages)
                 try:
+                    raw = source.read_bytes() if isinstance(source, Path) else source
                     if converter:
                         result, pages = converter(raw, name)
                         progress(pages, pages)
@@ -96,6 +115,10 @@ def run(job, files, image, size, opts, converter=None):
                 except Exception as exc:
                     report = dict(file=name, status='error', error=str(exc) if isinstance(exc, ValueError) else 'Không xử lý được file PDF này.')
                     event(job, 'file_error', **report, traceback=traceback.format_exc())
+                finally:
+                    raw = result = None
+                    if isinstance(source, Path):
+                        source.unlink(missing_ok=True)
                 with LOCK:
                     job['reports'].append(report)
                     job['completed'] += 1
@@ -103,6 +126,7 @@ def run(job, files, image, size, opts, converter=None):
             archive.writestr('bao-cao.json', json.dumps(job['reports'], ensure_ascii=False, indent=2))
             event(job, 'completed', success=job['success'], failed=job['failed'])
             archive.write(folder / 'progress.jsonl', 'tien-trinh.jsonl')
+        shutil.rmtree(folder / 'inputs', ignore_errors=True)
         with LOCK:
             job['state'] = 'completed'
     except Exception:
@@ -112,3 +136,6 @@ def run(job, files, image, size, opts, converter=None):
         finally:
             with LOCK:
                 job.update(state='error', error='Lượt xử lý bị gián đoạn. Xem log để kiểm tra và chạy lại file gốc.')
+
+    finally:
+        shutil.rmtree(folder / 'inputs', ignore_errors=True)

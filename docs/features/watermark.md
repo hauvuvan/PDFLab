@@ -51,7 +51,7 @@ Kho tại `data/presets.json`, tối đa 30 mẫu / 64 MB, không đưa vào Git
 
 ## Giới hạn
 
-100 PDF/lượt, request tối đa 200 MB, giao diện giới hạn PDF 195 MB, ảnh tối đa 15 MB / 25 triệu điểm ảnh; tổng request vẫn phải dưới 200 MB. Lô lớn/nhiều trang có thể cần chia nhỏ do bộ nhớ. Không hỗ trợ Word/Excel, HEIC, mở khóa PDF, nhiều lớp watermark khác nhau trong một lượt, chỉnh trực tiếp bằng kéo trên preview hoặc tài khoản nhiều người dùng. Mỗi lượt dùng một ảnh hoặc một nội dung chữ. Chưa kiểm thử trên tài liệu thật của người dùng hoặc khối lượng sát giới hạn.
+Giao diện watermark không giới hạn số PDF hoặc tổng dung lượng lô. `/api/jobs` và `/api/preview` không áp dụng trần request 200 MB hay số phần multipart. PDF tải lên được ghi vào ổ đĩa tạm; worker đọc và xử lý lần lượt một file, ghi ZIP rồi giải phóng dữ liệu và xóa bản tạm của file đó. Parser không giữ một file descriptor cho mỗi PDF. Cần đủ dung lượng ổ đĩa cho dữ liệu tải lên, bản staging và ZIP; từng PDF vẫn cần đủ RAM để engine xử lý. Ảnh watermark tối đa 15 MB / 25 triệu điểm ảnh. Các API khác, gồm `/api/process` tương thích cũ, giữ giới hạn hiện tại. Không hỗ trợ Word/Excel, HEIC, mở khóa PDF, nhiều lớp watermark khác nhau trong một lượt, chỉnh trực tiếp bằng kéo trên preview hoặc tài khoản nhiều người dùng. Mỗi lượt dùng một ảnh hoặc một nội dung chữ. Chưa kiểm thử trên tài liệu thật của người dùng hoặc khối lượng sát giới hạn.
 
 PyMuPDF có giấy phép AGPL/thương mại; cần rà soát khi phân phối. [Tài liệu kỹ thuật PyMuPDF](https://pymupdf.readthedocs.io/en/latest/page.html) giải thích quy ước tọa độ và chèn ảnh; script gốc chỉ được đọc để tham khảo, không thực thi.
 
@@ -77,7 +77,7 @@ Lệnh unittest ở [README](../../README.md). Test nâng cao xác minh render/p
 
 Chọn một PDF để xử lý riêng hoặc nhiều PDF để chạy lô, dùng cùng nút xuất. Giao diện hiển thị số file đã hoàn tất/tổng số, thành công/lỗi, tên file hiện tại và trang đã xử lý/tổng trang. Thanh tiến trình đo số file hoàn tất, không ước tính thời gian còn lại. Bước ghi/nén PDF có thể tiếp tục sau trang cuối. Các lỗi file không ngăn những file sau chạy; lỗi toàn lượt được báo riêng.
 
-- `POST /api/jobs`: cùng multipart như `/api/process`, trả HTTP 202 và `id`.
+- `POST /api/jobs`: cùng multipart như `/api/process`, nhận ít nhất một PDF, không giới hạn số PDF/tổng dung lượng; trả HTTP 202 và `id` sau khi nhận đủ lô và lưu staging. Lượt chạy xử lý tuần tự từng file. Giao diện hiển thị tổng dung lượng đã chọn. Nếu lỗi lưu hoặc khởi tạo worker, trả JSON503 và dọn staging. Nếu tiến trình bị tắt cưỡng bức, có thể còn upload tạm trong thư mục tạm hệ thống; staging theo lượt được dọn theo thời hạn kết quả.
 - `GET /api/jobs/<id>`: trạng thái `queued|running|completed|error`, `total`, `completed`, `page`, `pages`, `current`, `success`, `failed`, `reports`, `error`.
 - `GET /api/jobs/<id>/log`: tải JSONL ngay cả khi còn chạy hoặc toàn bộ PDF thất bại. Mỗi dòng có thời gian kèm múi giờ, sự kiện và dữ liệu tiến trình; lỗi có traceback giúp sửa lỗi.
 - `GET /api/jobs/<id>/result`: ZIP khi hoàn tất và có ít nhất một file thành công; ngược lại HTTP 409. Giữ `/api/process` đồng bộ để tương thích khách cũ.

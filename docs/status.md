@@ -33,3 +33,13 @@ Cập nhật: 2026-11-13 16:54 Asia/Ho_Chi_Minh. Đọc cùng [nhật ký hoạt
 
 - Hoàn tất khoảng cách dashboard12px, mobile không tràn; builder cập nhật thay bản cũ có phục hồi khi lỗi.62/62 tests đạt. Đã thay bundle Applications, Desktop dùng chung symlink.
 - Task này đã commit `dff51b9` và push thành công lên `origin/main`; các thay đổi công cụ ảnh đang ở working tree không thuộc nghiệm thu task này. VPS không áp dụng.
+
+## Cập nhật 2026-11-13 17:21 Asia/Ho_Chi_Minh — Lô watermark lớn
+
+- Hoàn tất bỏ giới hạn chọn100PDF/tổng195MB trên UI và API jobs/preview. PDF lưu tạm ổ đĩa, xử lý lần lượt từng file, dọn sau xử lý. Xem [chi tiết](features/watermark.md).
+- QA độc lập7/7 mới; suite69tests,2skip LibreOffice; WSGI request hơn200MB (2PDF101MiB) xuất2/2, text giữ nguyên, staging xóa. 1005file API và5001file metadata UI đạt; chưa kiểm lô nhiềuGB/browser bản mới.
+- Mã task chưa commit/chưa push trên main: môi trường chặn ghi .git/index.lock (Operation not permitted). Các thay đổi ở working tree; phần sắp xếp log có sẵn được giữ nguyên và chưa nghiệm thu. Chưa triển khai VPS; cần mở lại PDFLabs để launcher nạp mã mới.
+
+## Cập nhật 2026-11-16 — Đưa bản watermark lô lớn lên GitHub
+
+- Kiểm thử lại 69/69 đạt, gồm LibreOffice. Xem [nhật ký](activity-log.md) để biết kết quả xác minh GitHub. Chưa triển khai VPS vì chưa có đích hoặc cấu hình.

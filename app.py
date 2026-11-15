@@ -3,15 +3,37 @@ import json
 import os
 import zipfile
 from pathlib import Path
-from flask import Flask, jsonify, render_template, request, send_file
+from flask import Request, Flask, jsonify, render_template, request, send_file
 from werkzeug.exceptions import RequestEntityTooLarge
 from watermark import options, prepare_watermark, process, preview
 import presets
 import jobs
+from upload_stream import DiskUpload
 from runtime_version import SOURCE_VERSION, PROJECT_ID
 import word_converter
 
+class PDFRequest(Request):
+    """Watermark batches spool to disk without a batch size or part-count cap."""
+    @property
+    def max_content_length(self):
+        if self.path in ('/api/jobs', '/api/preview'):
+            return None
+        return super().max_content_length
+
+    @property
+    def max_form_parts(self):
+        if self.path in ('/api/jobs', '/api/preview'):
+            return None
+        return super().max_form_parts
+
+    def _get_file_stream(self, total_content_length, content_type, filename=None, content_length=None):
+        if self.path in ('/api/jobs', '/api/preview'):
+            return DiskUpload()
+        return super()._get_file_stream(total_content_length, content_type, filename, content_length)
+
+
 app = Flask(__name__)
+app.request_class = PDFRequest
 app.config.update(MAX_CONTENT_LENGTH=200 * 1024 * 1024, MAX_FORM_MEMORY_SIZE=1024 * 1024,
                   PRESETS_PATH=Path(__file__).parent / 'data' / 'presets.json')
 
@@ -189,16 +211,14 @@ def create_job():
     try:
         opts, image, size = inputs()
         files = request.files.getlist('pdfs')
-        if not files or len(files) > 100:
-            raise ValueError('Chọn từ 1 đến 100 file PDF mỗi lượt.')
-        data = []
-        for pdf in files:
-            name = (pdf.filename or 'document.pdf').replace('\\', '/').split('/')[-1]
-            name = ''.join(c for c in name if ord(c) >= 32)[:180] or 'document.pdf'
-            data.append((name, pdf.read()))
-        return jsonify(id=jobs.submit(data, image, size, opts)), 202
+        if not files:
+            raise ValueError('Chọn ít nhất một file PDF.')
+        return jsonify(id=jobs.submit(files, image, size, opts, uploads=True)), 202
     except ValueError as exc:
         return jsonify(error=str(exc)), 400
+    except (OSError, RuntimeError):
+        app.logger.exception('Could not stage or queue watermark batch')
+        return jsonify(error='Không lưu hoặc khởi tạo được lượt xử lý. Kiểm tra dung lượng ổ đĩa và thử lại.'), 503
 
 
 @app.get('/api/word/status')

@@ -134,3 +134,21 @@
 - GitHub: chuẩn bị commit phần task trên main và push origin; kết quả push ghi bổ sung sau xác minh. VPS: chưa triển khai, không có đích/cấu hình; đây là kiểm tra local.
 
 - Xác minh GitHub 2026-11-13 17:01 Asia/Ho_Chi_Minh: đã push origin/main thành công commit `61d9e97` (hai công cụ và kiểm thử). VPS chưa triển khai vì chưa có cấu hình.
+
+
+## 2026-11-13 17:21 Asia/Ho_Chi_Minh — Bỏ giới hạn lô watermark PDF
+
+- Yêu cầu: thêm nhiều PDF không chặn tổng195MB hay100file, xử lý tuần tự.
+- Thay đổi: UI bỏ hai giới hạn, hiển thị số file/tổngMB; API jobs/preview bỏ trần bytes và số phần multipart. Upload spool ổ đĩa với DiskUpload đóng FD sau mỗi thao tác, staging theo lượt; worker đọc một file, xuất ZIP, giải phóng dữ liệu/xóa staging rồi chuyển file tiếp theo. Lỗi staging/queue trả JSON503 và dọn thư mục. Không đổi giới hạn Word/công cụ ảnh/API process cũ.
+- QA độc lập `/root/batch_qa`:7/7 test mới, suite69tests (2skip LibreOffice), kiểm1005file/thứ tự/tên trùng/lỗi/dọn input/JSON503/FD/multipart hỏng; Node VM thêm5001file metadata tổng hơn49GB, không phải upload lô49GB. JS syntax/diff check đạt.
+- Kiểm tra thực tế qua Flask WSGI: request211812961bytes (2PDF101MiB/file, PDF thử nghiệm thêm padding) vượt200MB;2thành công0lỗi, ZIP đọc được, text nguồn còn, staging đã xóa. Không phải tài liệu thật hoặc thử tải qua browser. Mở server riêng8776 bị môi trường từ chối Operation not permitted; chưa xác minh browser/khởi động lại bản8765. Người dùng mở lại PDFLabs để launcher nạp mã mới.
+- Giới hạn: nhận đủ multipart trước khi xử lý; không chạy3–5file đồng thời. Ổ đĩa/RAM cho từngPDF vẫn phải đủ; nếu tiến trình bị tắt cưỡng bức, có thể còn upload tạm hệ thống và staging đến khi dọn. Chưa thử nhiềuGB thật, PDF ký số hay nền tảng khác.
+- Tài liệu: [watermark](features/watermark.md), [vận hành](README.md). Giữ nguyên phần sắp xếp nhật ký có sẵn ngoài phạm vi.
+- GitHub: chưa commit/chưa push, nhánh main; git add/apply --cached/commit bị chặn tạo .git/index.lock (Operation not permitted, .git chỉ được đọc trong môi trường hiện tại). Không thử push vì chưa có commit task. Mã và tài liệu task còn ở working tree, giữ nguyên thay đổi sắp xếp nhật ký có sẵn. VPS: chưa triển khai, không có đích/cấu hình; đây là thay đổi ứng dụng local.
+
+## 2026-11-16 00:05 Asia/Ho_Chi_Minh — Chuẩn bị đẩy bản watermark lô lớn
+
+- Yêu cầu: đưa bản dự án hiện tại lên GitHub. Phạm vi là mã, kiểm thử và tài liệu lô watermark lớn còn trong thư mục làm việc.
+- Kiểm thử độc lập: 69/69 đạt, gồm 7 ca lô lớn và 2 ca LibreOffice thực. Kiểm tra cú pháp JavaScript và `git diff --check` đạt. Chưa kiểm lại qua trình duyệt.
+- GitHub: trước khi đẩy, xác minh `origin/main` ở `811281d`. Kết quả lần đẩy ghi bên dưới sau khi xác minh. VPS: chưa có đích hoặc cấu hình triển khai.
+- Tài liệu: [watermark](features/watermark.md), [trạng thái](status.md).

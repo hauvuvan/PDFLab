@@ -25,13 +25,11 @@ function renderFiles(){
     const option=document.createElement('option');option.value=i;option.textContent=file.name;$('#preview-file').append(option);
   });
   if(!files.length){const option=document.createElement('option');option.textContent='Chưa chọn PDF';option.value='';$('#preview-file').append(option);}
-  $('#file-count').textContent=files.length ? files.length+' file đã chọn' : 'Chưa có file';
+  $('#file-count').textContent=files.length ? files.length+' file · '+(files.reduce((n,f)=>n+f.size,0)/1024/1024).toFixed(1)+' MB' : 'Chưa có file';
 }
 function addFiles(incoming){
   const all=[...files,...incoming];
   if(all.some(f=>!f.name.toLowerCase().endsWith('.pdf'))) return message('Chỉ chọn file PDF.',true);
-  if(all.length>100) return message('Mỗi lượt tối đa 100 file PDF.',true);
-  if(all.reduce((n,f)=>n+f.size,0)>195*1024*1024) return message('PDF vượt 195 MB. Hãy chia nhỏ để dành dung lượng cho ảnh watermark.',true);
   files=all;renderFiles();stale();
 }
 $('#pdfs').onchange=e=>{addFiles(e.target.files);e.target.value='';};
