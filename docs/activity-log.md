@@ -152,3 +152,5 @@
 - Kiểm thử độc lập: 69/69 đạt, gồm 7 ca lô lớn và 2 ca LibreOffice thực. Kiểm tra cú pháp JavaScript và `git diff --check` đạt. Chưa kiểm lại qua trình duyệt.
 - GitHub: trước khi đẩy, xác minh `origin/main` ở `811281d`. Kết quả lần đẩy ghi bên dưới sau khi xác minh. VPS: chưa có đích hoặc cấu hình triển khai.
 - Tài liệu: [watermark](features/watermark.md), [trạng thái](status.md).
+
+- Xác minh GitHub 2026-11-16 00:06 Asia/Ho_Chi_Minh: đã đẩy commit `abcc8f9` lên `origin/main`; SHA trên GitHub trùng SHA local.

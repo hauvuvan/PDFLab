@@ -43,3 +43,4 @@ Cập nhật: 2026-11-13 16:54 Asia/Ho_Chi_Minh. Đọc cùng [nhật ký hoạt
 ## Cập nhật 2026-11-16 — Đưa bản watermark lô lớn lên GitHub
 
 - Kiểm thử lại 69/69 đạt, gồm LibreOffice. Xem [nhật ký](activity-log.md) để biết kết quả xác minh GitHub. Chưa triển khai VPS vì chưa có đích hoặc cấu hình.
+- Bản watermark lô lớn đã lên `origin/main` ở commit [`abcc8f9`](https://github.com/hauvuvan/PDFLab/commit/abcc8f9aca4d0d2848faee79262c58142bdb8206), đã đối chiếu SHA trên GitHub.
