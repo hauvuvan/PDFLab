@@ -1,8 +1,11 @@
 """Explicit image-object removal and visible-coordinate region redaction."""
 import base64
+import io
 import json
 import math
+from pathlib import Path
 import re
+import zipfile
 import fitz
 from watermark import open_pdf, selected_pages
 
@@ -209,3 +212,38 @@ def process(data, opts, number=None):
             zoom = min(1.5, 1400/max(page.rect.width, page.rect.height))
             return page.get_pixmap(matrix=fitz.Matrix(zoom, zoom), alpha=False).tobytes('png'), removed
         return doc.tobytes(garbage=4, deflate=True), removed
+
+
+def batch_process(files, opts):
+    if not opts['regions'] and not opts['images']:
+        raise ValueError('Hãy chọn ảnh có sẵn hoặc khoanh ít nhất một vùng cần xoá.')
+    if not files:
+        raise ValueError('Vui lòng chọn ít nhất một file PDF.')
+    bio = io.BytesIO()
+    reports = []
+    used = set()
+    with zipfile.ZipFile(bio, 'w', zipfile.ZIP_DEFLATED) as archive:
+        for name, data in files:
+            if not name.lower().endswith('.pdf'):
+                reports.append(dict(file=name, status='error', error='File không có định dạng PDF.'))
+                continue
+            try:
+                with open_pdf(data) as doc:
+                    count = apply(doc, opts)
+                    output_bytes = doc.tobytes(garbage=4, deflate=True)
+                    pages = len(doc)
+                stem = Path(name).stem
+                desired = f'{stem}_da_xoa_watermark.pdf'
+                candidate, index = desired, 2
+                while candidate.casefold() in used:
+                    candidate = f'{stem}_da_xoa_watermark ({index}).pdf'
+                    index += 1
+                used.add(candidate.casefold())
+                archive.writestr(candidate, output_bytes)
+                reports.append(dict(file=name, output=candidate, status='ok', pages=pages, removed_images=count))
+            except Exception as exc:
+                reports.append(dict(file=name, status='error', error=str(exc) if isinstance(exc, ValueError) else 'Không xử lý được file PDF này.'))
+        archive.writestr('bao-cao.json', json.dumps(reports, ensure_ascii=False, indent=2))
+    bio.seek(0)
+    return bio.getvalue(), reports
+

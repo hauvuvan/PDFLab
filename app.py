@@ -69,26 +69,50 @@ def removal_editor():
 @app.post('/api/removal/<action>')
 def removal_action(action):
     import removal
-    if action not in ('inspect', 'preview', 'export'):
+    if action not in ('inspect', 'preview', 'export', 'batch'):
         return jsonify(error='Không tìm thấy thao tác.'), 404
     try:
-        pdf = request.files.get('pdf')
-        if not pdf or not pdf.filename.lower().endswith('.pdf'):
-            raise ValueError('Vui lòng chọn PDF.')
-        data = pdf.read()
-        try:
-            number = int(request.form.get('page', '1'))
-        except ValueError:
-            raise ValueError('Số trang không hợp lệ.')
         with jobs.ENGINE_LOCK:
+            if action == 'batch':
+                files = request.files.getlist('pdfs')
+                if not files:
+                    single = request.files.get('pdf')
+                    if single:
+                        files = [single]
+                if not files:
+                    raise ValueError('Vui lòng chọn ít nhất một file PDF.')
+                data_list = []
+                for f in files:
+                    name = (f.filename or 'document.pdf').replace('\\', '/').split('/')[-1]
+                    name = ''.join(c for c in name if ord(c) >= 32)[:180] or 'document.pdf'
+                    data_list.append((name, f.read()))
+                opts = removal.settings(request.form)
+                zip_bytes, reports = removal.batch_process(data_list, opts)
+                ok_count = sum(1 for r in reports if r['status'] == 'ok')
+                response = send_file(io.BytesIO(zip_bytes), mimetype='application/zip',
+                                     as_attachment=True, download_name='da-xoa-watermark-hang-loat.zip')
+                response.headers['X-Success-Count'] = str(ok_count)
+                response.headers['X-Total-Count'] = str(len(reports))
+                return response
+
+            pdf = request.files.get('pdf')
+            if not pdf or not pdf.filename.lower().endswith('.pdf'):
+                raise ValueError('Vui lòng chọn PDF.')
+            data = pdf.read()
+            try:
+                number = int(request.form.get('page', '1'))
+            except ValueError:
+                raise ValueError('Số trang không hợp lệ.')
             if action == 'inspect':
                 return jsonify(removal.inspect(data, number))
             opts = removal.settings(request.form)
             result, count = removal.process(data, opts, number if action == 'preview' else None)
-        response = send_file(io.BytesIO(result), mimetype='image/png' if action == 'preview' else 'application/pdf',
-                             as_attachment=action == 'export', download_name='da-xoa-watermark.pdf')
-        response.headers['X-Removed-Images'] = str(count)
-        return response
+            stem = Path(pdf.filename or 'tai-lieu.pdf').stem
+            download_name = f'{stem}_da_xoa_watermark.pdf'
+            response = send_file(io.BytesIO(result), mimetype='image/png' if action == 'preview' else 'application/pdf',
+                                 as_attachment=action == 'export', download_name=download_name)
+            response.headers['X-Removed-Images'] = str(count)
+            return response
     except ValueError as exc:
         return jsonify(error=str(exc)), 400
 

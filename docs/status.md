@@ -44,3 +44,14 @@ Cập nhật: 2026-11-13 16:54 Asia/Ho_Chi_Minh. Đọc cùng [nhật ký hoạt
 
 - Kiểm thử lại 69/69 đạt, gồm LibreOffice. Xem [nhật ký](activity-log.md) để biết kết quả xác minh GitHub. Chưa triển khai VPS vì chưa có đích hoặc cấu hình.
 - Bản watermark lô lớn đã lên `origin/main` ở commit [`abcc8f9`](https://github.com/hauvuvan/PDFLab/commit/abcc8f9aca4d0d2848faee79262c58142bdb8206), đã đối chiếu SHA trên GitHub.
+
+## Cập nhật 2026-11-17 16:26 Asia/Ho_Chi_Minh — Xoá watermark kéo thả, hàng loạt và tên file theo file gốc
+
+- Hoàn thành nâng cấp công cụ Xoá watermark:
+  + Khung kéo-thả Dropzone trong Bước 1 cho phép kéo thả hoặc chọn nhiều file PDF cùng lúc.
+  + Danh sách file hiển thị file mẫu xem trước, cho phép chuyển đổi file mẫu xem trước linh hoạt.
+  + Xử lý hàng loạt các file PDF cùng mẫu theo cấu hình ảnh/vùng khoanh đã chọn, đóng gói ZIP `da-xoa-watermark-hang-loat.zip` chứa từng file con và `bao-cao.json`.
+  + Tự động đổi tên file xuất theo file gốc `<tên_gốc>_da_xoa_watermark.pdf` (cả khi xuất đơn và trong file ZIP).
+  + Bổ sung nút "Chỉ xuất file mẫu này" khi có nhiều file trong danh sách.
+- QA độc lập 72/72 tests pass (2 skip LibreOffice); đã kiểm tra logic thực tế qua Flask test_client; cú pháp JS đạt; HTML toàn vẹn.
+- Trạng thái Git: Mã và tài liệu đang ở working tree, chưa commit/push. VPS: Không áp dụng.

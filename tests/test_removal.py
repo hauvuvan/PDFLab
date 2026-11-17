@@ -195,6 +195,38 @@ class RemovalTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             removal.inspect(fixture(1), 2)
 
+    def test_batch_process_zip_and_naming(self):
+        import zipfile
+        pdf1 = fixture(1)
+        pdf2 = fixture(2)
+        selected = removal.inspect(pdf1, 1)['candidates'][0]['id']
+        options = opts(images=json.dumps([selected]))
+        files = [('test1.pdf', pdf1), ('test2.pdf', pdf2), ('test1.pdf', pdf1)]
+        zip_bytes, reports = removal.batch_process(files, options)
+        self.assertEqual(len(reports), 3)
+        self.assertTrue(all(r['status'] == 'ok' for r in reports))
+        with zipfile.ZipFile(io.BytesIO(zip_bytes)) as z:
+            names = z.namelist()
+            self.assertIn('test1_da_xoa_watermark.pdf', names)
+            self.assertIn('test2_da_xoa_watermark.pdf', names)
+            self.assertIn('test1_da_xoa_watermark (2).pdf', names)
+            self.assertIn('bao-cao.json', names)
+            report_data = json.loads(z.read('bao-cao.json').decode('utf-8'))
+            self.assertEqual(len(report_data), 3)
+            with fitz.open(stream=z.read('test1_da_xoa_watermark.pdf'), filetype='pdf') as doc:
+                self.assertEqual(len(doc[0].get_image_info()), 0)
+
+    def test_batch_process_validation_and_partial_errors(self):
+        with self.assertRaises(ValueError):
+            removal.batch_process([], opts(regions='[[0,0,1,1]]'))
+        with self.assertRaises(ValueError):
+            removal.batch_process([('a.pdf', b'%PDF')], opts())
+        zip_bytes, reports = removal.batch_process([('good.pdf', fixture(1)), ('bad.pdf', b'not a pdf'), ('text.txt', b'hello')], opts(regions='[[0,0.85,1,1]]'))
+        self.assertEqual(len(reports), 3)
+        self.assertEqual(reports[0]['status'], 'ok')
+        self.assertEqual(reports[1]['status'], 'error')
+        self.assertEqual(reports[2]['status'], 'error')
+
 
 class RemovalApiTests(unittest.TestCase):
     def setUp(self):
@@ -220,11 +252,32 @@ class RemovalApiTests(unittest.TestCase):
         result = self.post('export', config)
         self.assertEqual(result.status_code, 200)
         self.assertEqual(result.mimetype, 'application/pdf')
+        self.assertIn('source_da_xoa_watermark.pdf', result.headers.get('Content-Disposition', ''))
         self.assertEqual(result.headers['X-Removed-Images'], '1')
         with fitz.open(stream=result.data, filetype='pdf') as doc:
             self.assertEqual(len(doc[0].get_image_info()), 0)
             self.assertEqual(len(doc[1].get_image_info()), 1)
             self.assertIn('KEEP OVERLAP', doc[0].get_text())
+
+    def test_api_batch_export(self):
+        import zipfile
+        inspected = self.post('inspect').get_json()
+        config = dict(images=json.dumps([inspected['candidates'][0]['id']]), pages='all')
+        data = {
+            'pdfs': [
+                (io.BytesIO(fixture(1)), 'first.pdf'),
+                (io.BytesIO(fixture(2)), 'second.pdf')
+            ],
+            **config
+        }
+        res = self.client.post('/api/removal/batch', data=data)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.mimetype, 'application/zip')
+        self.assertEqual(res.headers.get('X-Success-Count'), '2')
+        self.assertEqual(res.headers.get('X-Total-Count'), '2')
+        with zipfile.ZipFile(io.BytesIO(res.data)) as z:
+            self.assertIn('first_da_xoa_watermark.pdf', z.namelist())
+            self.assertIn('second_da_xoa_watermark.pdf', z.namelist())
 
     def test_invalid_inputs_and_local_origin_protection(self):
         self.assertEqual(self.client.post('/api/removal/inspect').status_code, 400)

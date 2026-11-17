@@ -43,15 +43,6 @@
 
 - Xác minh sau khởi động lại 2026-11-13 16:12 +0700: localhost:8765 GET /health HTTP200, version1.1.0; GET /api/presets HTTP200, 2 mẫu còn nguyên. Bản mã watermark commit9ed88d3. Đây là kiểm tra local, không có VPS.
 
-## 2026-11-13 16:37 Asia/Ho_Chi_Minh — Word sang PDF hàng loạt
-
-- Yêu cầu: thêm tool chuyển nhiều tài liệu Word thành PDF.
-- Thay đổi: thẻ/sidebar Word sang PDF, chọn/kéo thả DOC/DOCX, bỏ file, giới hạn100 file/195MB, tiến trình nền/nối lại theo dõi, báo lỗi riêng, ZIP PDF/báo cáo/log, tên trùng thêm số. LibreOffice cục bộ, profile/thư mục tạm riêng, timeout120s/file; giữ nguồn. Dùng chung hàng đợi hiện có.
-- Kiểm thử độc lập: agent `/root/word_qa`, 5/5 test Word đạt. Chuyển DOCX tiếng Việt và DOC nhị phân Word97 thực; xác minh nội dung PDF; lô2 tên trùng Unicode+1 lỗi; toàn lỗi chỉ log; thiếu engine/timeout/engine lỗi/file rỗng/sai đuôi. Agent chính chạy lại5/5 đạt, JS syntax đạt. Bản riêng xuất từ nội dung chuẩn bị commit Word đạt40/40 unittest; không chứa phần xóa watermark ngoài task. Regression lúc kiểm tra43/44 đạt, lỗi `test_removal.test_selected_image_keeps_other_contained_image` thuộc phần xóa watermark đang sửa song song, không đưa vào commit Word.
-- Kiểm tra browser local `http://127.0.0.1:8772/#word`: bộ chuyển đổi sẵn sàng, chọn DOCX thử nghiệm → nút chuyển → hoàn tất1 thành công0lỗi, PDF1trang; có link ZIP và log. Đây là bản kiểm tra local, không phải triển khai VPS. Chưa nghiệm thu Word bố cục phức tạp, mật khẩu hoặc lô sát195MB.
-- Tài liệu: [Word sang PDF](features/word-to-pdf.md), [tổng quan](README.md), [hướng dẫn mở](../README.md). Giữ nguyên thay đổi UI/xóa watermark ngoài task; chỉ stage phần Word.
-- GitHub: commit local sau kiểm tra; chưa push vì không có remote. VPS: chưa triển khai do không có đích/cấu hình truy cập; công cụ chạy localhost.
-
 ## 2026-11-13 16:36 Asia/Ho_Chi_Minh — Tối ưu chữ, nút và điều khiển
 
 - Yêu cầu: tối ưu thực chất UI UX về text/button/element sau lượt chỉnh bố cục.
@@ -61,6 +52,15 @@
 - Tài liệu: [giao diện](features/interface.md). Giữ các thay đổi khác đang xuất hiện đồng thời trong app.py/jobs.py/README và tài liệu tổng quan.
 - GitHub: commit local phần UX; chưa push do chưa có remote. VPS: chưa triển khai do không có đích/cấu hình.
 - Xác nhận desktop sau yêu cầu chỉ máy tính: viewport1440×960, cột cấu hình/preview đúng; màu ảnh không áp dụng được ẩn.
+
+## 2026-11-13 16:37 Asia/Ho_Chi_Minh — Word sang PDF hàng loạt
+
+- Yêu cầu: thêm tool chuyển nhiều tài liệu Word thành PDF.
+- Thay đổi: thẻ/sidebar Word sang PDF, chọn/kéo thả DOC/DOCX, bỏ file, giới hạn100 file/195MB, tiến trình nền/nối lại theo dõi, báo lỗi riêng, ZIP PDF/báo cáo/log, tên trùng thêm số. LibreOffice cục bộ, profile/thư mục tạm riêng, timeout120s/file; giữ nguồn. Dùng chung hàng đợi hiện có.
+- Kiểm thử độc lập: agent `/root/word_qa`, 5/5 test Word đạt. Chuyển DOCX tiếng Việt và DOC nhị phân Word97 thực; xác minh nội dung PDF; lô2 tên trùng Unicode+1 lỗi; toàn lỗi chỉ log; thiếu engine/timeout/engine lỗi/file rỗng/sai đuôi. Agent chính chạy lại5/5 đạt, JS syntax đạt. Bản riêng xuất từ nội dung chuẩn bị commit Word đạt40/40 unittest; không chứa phần xóa watermark ngoài task. Regression lúc kiểm tra43/44 đạt, lỗi `test_removal.test_selected_image_keeps_other_contained_image` thuộc phần xóa watermark đang sửa song song, không đưa vào commit Word.
+- Kiểm tra browser local `http://127.0.0.1:8772/#word`: bộ chuyển đổi sẵn sàng, chọn DOCX thử nghiệm → nút chuyển → hoàn tất1 thành công0lỗi, PDF1trang; có link ZIP và log. Đây là bản kiểm tra local, không phải triển khai VPS. Chưa nghiệm thu Word bố cục phức tạp, mật khẩu hoặc lô sát195MB.
+- Tài liệu: [Word sang PDF](features/word-to-pdf.md), [tổng quan](README.md), [hướng dẫn mở](../README.md). Giữ nguyên thay đổi UI/xóa watermark ngoài task; chỉ stage phần Word.
+- GitHub: commit local sau kiểm tra; chưa push vì không có remote. VPS: chưa triển khai do không có đích/cấu hình truy cập; công cụ chạy localhost.
 
 ## 2026-11-13 16:41 Asia/Ho_Chi_Minh — Công cụ xoá watermark PDF
 
@@ -154,3 +154,19 @@
 - Tài liệu: [watermark](features/watermark.md), [trạng thái](status.md).
 
 - Xác minh GitHub 2026-11-16 00:06 Asia/Ho_Chi_Minh: đã đẩy commit `abcc8f9` lên `origin/main`; SHA trên GitHub trùng SHA local.
+
+## 2026-11-17 16:26 Asia/Ho_Chi_Minh — Xoá watermark: Kéo thả, xử lý hàng loạt cùng mẫu & đặt tên theo file gốc
+
+- Yêu cầu: thêm chế độ kéo thả file (dropzone) cho công cụ xoá watermark; hỗ trợ xử lý hàng loạt nhiều file PDF cùng mẫu; xuất file kết quả tự động mang tên theo file gốc thay vì tên cố định.
+- Thay đổi:
+  + `templates/removal.html`: Thêm khung `#dropzone` kéo-thả, chọn nhiều PDF (`multiple`), danh sách file `#file-list`, đếm số lượng `#file-count`, nút `#export-single` cho phép xuất riêng file mẫu khi có nhiều file trong danh sách.
+  + `static/removal.css`: Thêm kiểu hiển thị `.badge-sample`, nút `.sample-btn` để chuyển đổi file mẫu xem trước trong danh sách.
+  + `static/removal.js`: Hỗ trợ kéo-thả drag & drop, quản lý danh sách file, chọn xem mẫu bất kỳ file nào trong lô, tự động đổi nhãn nút xuất thành `Xoá hàng loạt (X file)` khi có nhiều file, tải file ZIP `da-xoa-watermark-hang-loat.zip` cho lô và tải file `<tên_gốc>_da_xoa_watermark.pdf` khi xuất đơn.
+  + `removal.py`: Thêm hàm `batch_process(files, opts)` áp dụng cấu hình xoá watermark (ảnh/vùng khoanh) tuần tự cho danh sách file PDF, giải quyết trùng tên file, xuất `bao-cao.json` và đóng gói ZIP.
+  + `app.py`: Mở rộng endpoint `/api/removal/<action>` hỗ trợ action `batch` (trả về ZIP kèm header thống kê), cập nhật action `export` trả về tên file tương ứng với file gốc `<stem>_da_xoa_watermark.pdf`.
+  + `tests/test_removal.py`: Bổ sung 4 unit test kiểm thử `batch_process`, xử lý lỗi từng file, API batch export và đặt tên file xuất đơn.
+  + `docs/features/remove-watermark.md`: Cập nhật tài liệu hướng dẫn sử dụng và thông số API.
+- Kiểm thử độc lập: Agent QA xác nhận 72/72 tests pass (2 skip LibreOffice), cú pháp JS hợp lệ, cấu trúc HTML đầy đủ phần tử, Flask test_client kiểm tra thực tế: batch export trả về ZIP chứa đúng tên file con `<tên_gốc>_da_xoa_watermark.pdf`, watermark đã được gỡ bỏ hoàn toàn trên tất cả tài liệu, export đơn đặt đúng Content-Disposition.
+- Giới hạn: Trình duyệt web có sandbox bảo mật nên tải file về thư mục Downloads (hoặc hỏi vị trí lưu) thay vì tự ý ghi thẳng vào thư mục gốc trên ổ đĩa máy tính; lô nhiều file được đóng gói ZIP tiện lợi.
+- Tài liệu: [Xoá watermark PDF](features/remove-watermark.md), [Trạng thái dự án](status.md).
+- GitHub / VPS: Chưa commit/chưa push; VPS không áp dụng cho ứng dụng local.
