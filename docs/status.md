@@ -54,4 +54,4 @@ Cập nhật: 2026-11-13 16:54 Asia/Ho_Chi_Minh. Đọc cùng [nhật ký hoạt
   + Tự động đổi tên file xuất theo file gốc `<tên_gốc>_da_xoa_watermark.pdf` (cả khi xuất đơn và trong file ZIP).
   + Bổ sung nút "Chỉ xuất file mẫu này" khi có nhiều file trong danh sách.
 - QA độc lập 72/72 tests pass (2 skip LibreOffice); đã kiểm tra logic thực tế qua Flask test_client; cú pháp JS đạt; HTML toàn vẹn.
-- Trạng thái Git: Mã và tài liệu đang ở working tree, chưa commit/push. VPS: Không áp dụng.
+- Trạng thái Git: Đã commit và push thành công lên `origin/main` ở commit [`9ee3d42`](https://github.com/hauvuvan/PDFLab/commit/9ee3d42). VPS: Không áp dụng.

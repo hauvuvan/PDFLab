@@ -169,4 +169,4 @@
 - Kiểm thử độc lập: Agent QA xác nhận 72/72 tests pass (2 skip LibreOffice), cú pháp JS hợp lệ, cấu trúc HTML đầy đủ phần tử, Flask test_client kiểm tra thực tế: batch export trả về ZIP chứa đúng tên file con `<tên_gốc>_da_xoa_watermark.pdf`, watermark đã được gỡ bỏ hoàn toàn trên tất cả tài liệu, export đơn đặt đúng Content-Disposition.
 - Giới hạn: Trình duyệt web có sandbox bảo mật nên tải file về thư mục Downloads (hoặc hỏi vị trí lưu) thay vì tự ý ghi thẳng vào thư mục gốc trên ổ đĩa máy tính; lô nhiều file được đóng gói ZIP tiện lợi.
 - Tài liệu: [Xoá watermark PDF](features/remove-watermark.md), [Trạng thái dự án](status.md).
-- GitHub / VPS: Chưa commit/chưa push; VPS không áp dụng cho ứng dụng local.
+- GitHub / VPS: Đã commit và push thành công lên `origin/main` tại commit [`9ee3d42`](https://github.com/hauvuvan/PDFLab/commit/9ee3d42). VPS không áp dụng cho ứng dụng local.
